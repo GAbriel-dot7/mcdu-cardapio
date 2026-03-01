@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MC'DU Salgados – Cardápio Digital</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- TELA 1 – IDENTIFICAÇÃO DO CLIENTE -->
+  <div id="tela-entrada" class="tela ativa">
+    <div class="entrada-wrapper">
+      <div class="logo-marca">
+        <span class="logo-mc">MC'DU</span>
+        <span class="logo-sub">SALGADOS</span>
+      </div>
+      <p class="entrada-slogan">Monte seu pedido e envie pelo WhatsApp!</p>
+      <div class="campo-grupo">
+        <label for="nome-cliente">Seu nome</label>
+        <input type="text" id="nome-cliente" placeholder="Ex: Maria Silva" autocomplete="off" maxlength="60" />
+      </div>
+      <button class="btn-primario" id="btn-entrar">Ver Cardápio →</button>
+    </div>
+  </div>
+
+  <!-- TELA 2 – CARDÁPIO -->
+  <div id="tela-cardapio" class="tela">
+
+    <header class="header-fixo">
+      <div class="header-inner">
+        <div class="header-logo">MC'DU <span>Salgados</span></div>
+        <button class="btn-resumo-header" id="btn-ver-resumo">
+          🛒 Resumo
+          <span class="badge-contador" id="badge-itens">0</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="nav-categorias">
+      <button class="nav-btn ativo" data-cat="pasteis-trad">Pastéis</button>
+      <button class="nav-btn" data-cat="mini-pasteis">Mini Pastéis</button>
+      <button class="nav-btn" data-cat="mini-fritos">Fritos</button>
+      <button class="nav-btn" data-cat="salgados-assados">Assados</button>
+      <button class="nav-btn" data-cat="mini-pizzas">Mini Pizzas</button>
+      <button class="nav-btn" data-cat="mini-hamburguer">Mini Burguer</button>
+      <button class="nav-btn" data-cat="baguetes">Baguetes</button>
+      <button class="nav-btn" data-cat="kibe">Kibe</button>
+      <button class="nav-btn" data-cat="mini-empada">Mini Empada</button>
+      <button class="nav-btn" data-cat="lanche-hamburguer">Lanche Burguer</button>
+      <button class="nav-btn" data-cat="doces">Doces</button>
+    </nav>
+
+    <main class="cardapio-conteudo">
+
+      <!-- PASTÉIS TRADICIONAIS (unitário) -->
+      <section class="categoria" id="pasteis-trad">
+        <div class="cat-header">
+          <h2>Pastéis Tradicionais</h2>
+          <span class="cat-preco-tag">R$ 10,00 / unidade</span>
+        </div>
+        <p class="cat-desc">Selecione a quantidade de cada sabor.</p>
+        <div class="itens-unitarios">
+          <div class="item-unitario" data-cat="pasteis-trad" data-sabor="Carne" data-preco="10">
+            <span class="item-nome">Carne</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="pasteis-trad" data-sabor="Queijo" data-preco="10">
+            <span class="item-nome">Queijo</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="pasteis-trad" data-sabor="Frango" data-preco="10">
+            <span class="item-nome">Frango</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="pasteis-trad" data-sabor="Calabresa" data-preco="10">
+            <span class="item-nome">Calabresa</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="pasteis-trad" data-sabor="Palmito" data-preco="10">
+            <span class="item-nome">Palmito</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!--
+        ITENS POR CENTO — renderizados pelo JS via data-attributes
+        data-cat         = id único da categoria
+        data-titulo      = nome legível para o resumo
+        data-preco-cento = preço por 100 unidades
+        data-max-sabores = máx de sabores diferentes (0 = sem limite)
+        data-sabores     = sabores separados por "|" (vazio = sem escolha)
+      -->
+
+      <!-- MINI PASTÉIS -->
+      <section class="categoria" id="mini-pasteis">
+        <div class="cat-header">
+          <h2>Mini Pastéis</h2>
+          <span class="cat-preco-tag">R$ 85,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="mini-pasteis"
+             data-titulo="Mini Pastéis"
+             data-preco-cento="85"
+             data-max-sabores="0"
+             data-sabores="Carne|Queijo|Frango|Presunto e Queijo">
+        </div>
+      </section>
+
+      <!-- MINI SALGADOS FRITOS -->
+      <section class="categoria" id="mini-fritos">
+        <div class="cat-header">
+          <h2>Mini Salgados Fritos</h2>
+          <span class="cat-preco-tag">R$ 85,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="mini-fritos"
+             data-titulo="Mini Salgados Fritos"
+             data-preco-cento="85"
+             data-max-sabores="0"
+             data-sabores="Coxinha|Risoles|Bolinha de Queijo|Presunto e Queijo|Salsicha">
+        </div>
+      </section>
+
+      <!-- SALGADOS ASSADOS (máx 5 sabores) -->
+      <section class="categoria" id="salgados-assados">
+        <div class="cat-header">
+          <h2>Salgados Assados</h2>
+          <span class="cat-preco-tag">R$ 100,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="salgados-assados"
+             data-titulo="Salgados Assados"
+             data-preco-cento="100"
+             data-max-sabores="5"
+             data-sabores="Calabresa|Frango|Presunto e Queijo|Hot Dog|Esfiha de Carne|Milho com Queijo|Brócolis|Palmito">
+        </div>
+      </section>
+
+      <!-- MINI PIZZAS (máx 5 sabores) -->
+      <section class="categoria" id="mini-pizzas">
+        <div class="cat-header">
+          <h2>Mini Pizzas</h2>
+          <span class="cat-preco-tag">R$ 90,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="mini-pizzas"
+             data-titulo="Mini Pizzas"
+             data-preco-cento="90"
+             data-max-sabores="5"
+             data-sabores="Calabresa|Frango c/ Catupiry|Presunto e Queijo|Quatro Queijos|Milho com Queijo|Brócolis e Palmito">
+        </div>
+      </section>
+
+      <!-- MINI HAMBURGUINHO ASSADO (sem sabores) -->
+      <section class="categoria" id="mini-hamburguer">
+        <div class="cat-header">
+          <h2>Mini Hamburguinho Assado</h2>
+          <span class="cat-preco-tag">R$ 140,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="mini-hamburguer"
+             data-titulo="Mini Hamburguinho Assado"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
+        </div>
+      </section>
+
+      <!-- BAGUETES RECHEADAS (unitário) -->
+      <section class="categoria" id="baguetes">
+        <div class="cat-header">
+          <h2>Baguetes Recheadas</h2>
+          <span class="cat-preco-tag">R$ 50,00 / baguete</span>
+        </div>
+        <div class="itens-unitarios">
+          <div class="item-unitario" data-cat="baguetes" data-sabor="Frango" data-preco="50">
+            <span class="item-nome">Frango</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="baguetes" data-sabor="Calabresa" data-preco="50">
+            <span class="item-nome">Calabresa</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="baguetes" data-sabor="4 Queijos" data-preco="50">
+            <span class="item-nome">4 Queijos</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="baguetes" data-sabor="Presunto e Queijo" data-preco="50">
+            <span class="item-nome">Presunto e Queijo</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="baguetes" data-sabor="Palmito" data-preco="50">
+            <span class="item-nome">Palmito</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+          <div class="item-unitario" data-cat="baguetes" data-sabor="Salame" data-preco="50">
+            <span class="item-nome">Salame</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- KIBE (sem sabores) -->
+      <section class="categoria" id="kibe">
+        <div class="cat-header">
+          <h2>Kibe</h2>
+          <span class="cat-preco-tag">R$ 140,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="kibe"
+             data-titulo="Kibe"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
+        </div>
+      </section>
+
+      <!-- MINI EMPADA (sem sabores) -->
+      <section class="categoria" id="mini-empada">
+        <div class="cat-header">
+          <h2>Mini Empada</h2>
+          <span class="cat-preco-tag">R$ 140,00 / cento</span>
+        </div>
+        <div class="cento-novo"
+             data-cat="mini-empada"
+             data-titulo="Mini Empada"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
+        </div>
+      </section>
+
+      <!-- MINI LANCHE DE HAMBÚRGUER (unitário) -->
+      <section class="categoria" id="lanche-hamburguer">
+        <div class="cat-header">
+          <h2>Mini Lanche de Hambúrguer</h2>
+          <span class="cat-preco-tag">R$ 6,50 / unidade</span>
+        </div>
+        <div class="itens-unitarios">
+          <div class="item-unitario" data-cat="lanche-hamburguer" data-sabor="Mini Lanche de Hambúrguer" data-preco="6.50">
+            <span class="item-nome">Mini Lanche de Hambúrguer</span>
+            <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOCES — cada item vendido por cento usa cento-novo sem sabores,
+           exceto Pote Mini Churros que é por unidade (unitário normal) -->
+      <section class="categoria" id="doces">
+        <div class="cat-header">
+          <h2>Doces</h2>
+        </div>
+
+        <div class="doce-bloco">
+          <div class="doce-titulo-row">
+            <span class="doce-nome">Brigadeiro / Beijinho</span>
+            <span class="doce-preco-ref">R$ 90,00 / cento</span>
+          </div>
+          <div class="cento-novo"
+               data-cat="doces-brigadeiro"
+               data-titulo="Brigadeiro / Beijinho"
+               data-preco-cento="90"
+               data-max-sabores="0"
+               data-sabores="">
+          </div>
+        </div>
+
+        <div class="doce-bloco">
+          <div class="doce-titulo-row">
+            <span class="doce-nome">Churros</span>
+            <span class="doce-preco-ref">R$ 90,00 / cento</span>
+          </div>
+          <div class="cento-novo"
+               data-cat="doces-churros"
+               data-titulo="Churros"
+               data-preco-cento="90"
+               data-max-sabores="0"
+               data-sabores="">
+          </div>
+        </div>
+
+        <div class="doce-bloco">
+          <div class="doce-titulo-row">
+            <span class="doce-nome">Palito de Churros</span>
+            <span class="doce-preco-ref">R$ 65,00 / cento</span>
+          </div>
+          <div class="cento-novo"
+               data-cat="doces-palito"
+               data-titulo="Palito de Churros"
+               data-preco-cento="65"
+               data-max-sabores="0"
+               data-sabores="">
+          </div>
+        </div>
+
+        <!-- Pote Mini Churros é por unidade, não por cento -->
+        <div class="doce-bloco doce-bloco-unitario">
+          <div class="itens-unitarios">
+            <div class="item-cento-direto" data-cat="doces-pote" data-sabor="Pote Mini Churros (15 unid)" data-preco="12.25" data-unidade="pote">
+              <div class="item-nome-bloco">
+                <span class="item-nome">Pote Mini Churros (15 unid)</span>
+                <span class="item-preco-label">R$ 12,25 / pote</span>
+              </div>
+              <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Barra de total flutuante -->
+    <div class="barra-total" id="barra-total" style="display:none">
+      <span class="total-label">Total: <strong id="valor-total">R$ 0,00</strong></span>
+      <button class="btn-primario btn-pedido" id="btn-ver-pedido">Ver Pedido</button>
+    </div>
+
+  </div><!-- /tela-cardapio -->
+
+  <!-- TELA 3 – RESUMO DO PEDIDO -->
+  <div id="tela-resumo" class="tela">
+    <header class="header-fixo">
+      <div class="header-inner">
+        <button class="btn-voltar" id="btn-voltar-cardapio">← Cardápio</button>
+        <div class="header-logo">Resumo</div>
+      </div>
+    </header>
+    <div class="resumo-conteudo">
+      <div class="resumo-info-cliente">
+        <p><strong>Cliente:</strong> <span id="resumo-nome"></span></p>
+        <p><strong>Data/Hora:</strong> <span id="resumo-data"></span></p>
+      </div>
+      <div id="resumo-lista"></div>
+      <div class="resumo-total-bloco">
+        <span>TOTAL DO PEDIDO</span>
+        <strong id="resumo-total">R$ 0,00</strong>
+      </div>
+      <div id="alerta-resumo" class="alerta" style="display:none"></div>
+      <button class="btn-whatsapp" id="btn-whatsapp">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar pelo WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de alerta -->
+  <div id="modal-alerta" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <p id="modal-msg"></p>
+      <button class="btn-primario" id="modal-ok">OK</button>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
