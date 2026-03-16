@@ -317,6 +317,7 @@ body {
   color: var(--branco);
   font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
   outline: none; transition: border-color 0.2s;
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 .cn-input-qtd {
@@ -327,6 +328,7 @@ body {
   font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
   outline: none; transition: border-color 0.2s;
   /* Remove setas do number input */
+  appearance: textfield;
   -moz-appearance: textfield;
 }
 .cn-input-qtd::-webkit-outer-spin-button,
