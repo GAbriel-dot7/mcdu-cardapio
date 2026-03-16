@@ -1,38 +1,53 @@
 /**
  * MC'DU SALGADOS – Cardápio Digital
  *
- * LÓGICA DE CENTO:
- *  1. Sabores ficam visíveis imediatamente (sem precisar clicar na quantidade)
- *  2. Cliente escolhe a quantidade: 25 / 50 / 75 / 100 unidades
- *  3. Cliente toca nos sabores desejados (toggle simples)
- *  4. Sistema distribui automaticamente as unidades entre os sabores
- *
- * PREÇOS: proporcionais ao cento (precoCento × qtd / 100), sem arredondamento
- *
- * DISTRIBUIÇÃO AUTOMÁTICA:
- *  - divide igualmente; o resto é distribuído um a um nos primeiros sabores
- *  - Ex: 75 ÷ 4 sabores = 19/19/19/18
+ * NOVIDADES NESTA VERSÃO:
+ *  1. Tela de entrada: nome + data + hora de retirada com validação de
+ *     horário de funcionamento (quarta fechado, horários por dia da semana)
+ *  2. Sistema de cento escalável: botões rápidos (25/50/75/100) +
+ *     campo numérico livre para qualquer quantidade positiva (ex: 500, 1000)
+ *     Preço: precoCento × (quantidade / 100) — sempre exato
  */
 
 // ════════════════════════════════════════
 // CONFIGURAÇÃO
 // ════════════════════════════════════════
+
 const WHATSAPP_NUMERO = '5519993985276';
+
+/**
+ * Horários de funcionamento por dia da semana.
+ * Índice 0 = domingo, 1 = segunda, ..., 6 = sábado.
+ * null = fechado.
+ */
+const HORARIOS_FUNC = {
+  0: { abre: '09:00', fecha: '18:00' }, // Domingo
+  1: { abre: '14:00', fecha: '22:00' }, // Segunda
+  2: { abre: '14:00', fecha: '22:00' }, // Terça
+  3: null,                               // Quarta – FECHADO
+  4: { abre: '14:00', fecha: '22:00' }, // Quinta
+  5: { abre: '14:00', fecha: '22:00' }, // Sexta
+  6: { abre: '14:00', fecha: '22:00' }, // Sábado
+};
+
+const DIAS_PT = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 // ════════════════════════════════════════
 // ESTADO GLOBAL
 // ════════════════════════════════════════
+
 const estado = {
   nomeCliente: '',
+  retirada: { dataStr: '', horaStr: '', textoFormatado: '' },
   pedido: {},
   /*
     pedido[catId] = {
       titulo:              string,
       tipo:                'unitario' | 'cento',
-      precoUnit:           number,   // unitário: preço/un; cento: preço/100un
-      itens:               [{sabor, qtd}],   // usado apenas em 'unitario'
-      qtdSelecionada:      number,   // 25 | 50 | 75 | 100 (cento)
-      saboresSelecionados: string[], // (cento)
+      precoUnit:           number,
+      itens:               [{sabor, qtd}],       // 'unitario'
+      qtdSelecionada:      number,               // 'cento'
+      saboresSelecionados: string[],             // 'cento'
     }
   */
 };
@@ -66,7 +81,8 @@ function mostrarTela(id) {
 
 /**
  * Distribui `total` unidades entre `sabores` igualmente.
- * O resto da divisão vai para os primeiros sabores (um a mais cada).
+ * Resto vai 1 a 1 para os primeiros sabores.
+ * Ex: distribuir(100, ['A','B','C']) → 34/33/33
  */
 function distribuirSabores(total, sabores) {
   if (!sabores.length) return [];
@@ -75,16 +91,209 @@ function distribuirSabores(total, sabores) {
   return sabores.map((sabor, i) => ({ sabor, qtd: base + (i < resto ? 1 : 0) }));
 }
 
+/** Retorna a data de hoje no formato YYYY-MM-DD */
+function hojeISO() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+/** Converte "HH:MM" em minutos desde meia-noite */
+function horaParaMin(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** Retorna o índice do dia da semana (0-6) para uma string "YYYY-MM-DD" */
+function diaSemanaDeISO(isoStr) {
+  // Usar UTC para evitar problemas de fuso horário no parsing
+  const [y, m, d] = isoStr.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay();
+}
+
 // ════════════════════════════════════════
-// TELA DE ENTRADA
+// TELA DE ENTRADA – VALIDAÇÃO DE HORÁRIO
+// ════════════════════════════════════════
+
+const inputData  = document.getElementById('data-retirada');
+const inputHora  = document.getElementById('hora-retirada');
+const hintDia    = document.getElementById('hint-dia');
+const hintHora   = document.getElementById('hint-hora');
+
+// Define data mínima = hoje
+inputData.min = hojeISO();
+
+/**
+ * Atualiza o hint de dia e os limites do campo de hora.
+ * Chamado sempre que o usuário muda a data.
+ */
+function onDataChange() {
+  const dataVal = inputData.value;
+  inputData.classList.remove('invalido', 'valido');
+  hintDia.className = 'campo-hint';
+  hintDia.textContent = '';
+  inputHora.value = '';
+  inputHora.removeAttribute('min');
+  inputHora.removeAttribute('max');
+  inputHora.classList.remove('invalido', 'valido');
+  hintHora.className = 'campo-hint';
+  hintHora.textContent = '';
+
+  if (!dataVal) return;
+
+  const diaSemana = diaSemanaDeISO(dataVal);
+  const horario   = HORARIOS_FUNC[diaSemana];
+
+  if (!horario) {
+    // Fechado
+    inputData.classList.add('invalido');
+    hintDia.className = 'campo-hint erro';
+    hintDia.textContent = `❌ ${DIAS_PT[diaSemana]} – Fechado`;
+    inputData.value = '';
+    return;
+  }
+
+  inputData.classList.add('valido');
+  hintDia.className = 'campo-hint ok';
+  hintDia.textContent = `✔ ${DIAS_PT[diaSemana]} – ${horario.abre} às ${horario.fecha}`;
+
+  // Define limites de hora
+  let minHora = horario.abre;
+
+  // Se a data escolhida é hoje, o horário mínimo é o maior entre
+  // a abertura e o horário atual + 1 minuto (não permite hora passada)
+  if (dataVal === hojeISO()) {
+    const agora  = new Date();
+    const agoraMin = agora.getHours() * 60 + agora.getMinutes() + 1;
+    const aberturaMin = horaParaMin(horario.abre);
+    const efetMin = Math.max(agoraMin, aberturaMin);
+    const hh = String(Math.floor(efetMin / 60)).padStart(2, '0');
+    const mm = String(efetMin % 60).padStart(2, '0');
+    minHora = `${hh}:${mm}`;
+  }
+
+  inputHora.min = minHora;
+  inputHora.max = horario.fecha;
+}
+
+/**
+ * Valida o horário escolhido e atualiza o hint.
+ */
+function onHoraChange() {
+  const dataVal = inputData.value;
+  const horaVal = inputHora.value;
+
+  inputHora.classList.remove('invalido', 'valido');
+  hintHora.className = 'campo-hint';
+  hintHora.textContent = '';
+
+  if (!dataVal || !horaVal) return;
+
+  const diaSemana = diaSemanaDeISO(dataVal);
+  const horario   = HORARIOS_FUNC[diaSemana];
+  if (!horario) return;
+
+  const horaMins    = horaParaMin(horaVal);
+  const aberturaMins= horaParaMin(horario.abre);
+  const fechaMins   = horaParaMin(horario.fecha);
+
+  // Verifica se é hoje e hora passada
+  let minPermitido = aberturaMins;
+  if (dataVal === hojeISO()) {
+    const agora = new Date();
+    minPermitido = Math.max(aberturaMins, agora.getHours() * 60 + agora.getMinutes() + 1);
+  }
+
+  if (horaMins < minPermitido) {
+    inputHora.classList.add('invalido');
+    hintHora.className = 'campo-hint erro';
+    if (dataVal === hojeISO() && horaMins < horaParaMin(new Date().getHours() + ':' + new Date().getMinutes())) {
+      hintHora.textContent = '❌ Horário já passou. Escolha um horário futuro.';
+    } else {
+      hintHora.textContent = `❌ Ainda não abrimos. Abre às ${horario.abre}.`;
+    }
+    return;
+  }
+
+  if (horaMins > fechaMins) {
+    inputHora.classList.add('invalido');
+    hintHora.className = 'campo-hint erro';
+    hintHora.textContent = `❌ Após o fechamento (${horario.fecha}).`;
+    return;
+  }
+
+  inputHora.classList.add('valido');
+  hintHora.className = 'campo-hint ok';
+  hintHora.textContent = `✔ Horário válido`;
+}
+
+inputData.addEventListener('change', onDataChange);
+inputHora.addEventListener('change', onHoraChange);
+
+// ════════════════════════════════════════
+// TELA DE ENTRADA – AVANÇAR
 // ════════════════════════════════════════
 
 document.getElementById('btn-entrar').addEventListener('click', () => {
-  const nome = document.getElementById('nome-cliente').value.trim();
-  if (!nome) { mostrarAlerta('Por favor, informe seu nome antes de continuar.'); return; }
+  const nome    = document.getElementById('nome-cliente').value.trim();
+  const dataVal = inputData.value;
+  const horaVal = inputHora.value;
+
+  if (!nome) {
+    mostrarAlerta('Por favor, informe seu nome.');
+    return;
+  }
+  if (!dataVal) {
+    mostrarAlerta('Escolha a data de retirada.');
+    return;
+  }
+  if (!horaVal) {
+    mostrarAlerta('Escolha o horário de retirada.');
+    return;
+  }
+
+  // Valida novamente programaticamente (campo pode ter sido digitado manualmente)
+  const diaSemana = diaSemanaDeISO(dataVal);
+  const horario   = HORARIOS_FUNC[diaSemana];
+
+  if (!horario) {
+    mostrarAlerta(`${DIAS_PT[diaSemana]} é dia de folga! Escolha outra data.`);
+    return;
+  }
+
+  const horaMins     = horaParaMin(horaVal);
+  const aberturaMins = horaParaMin(horario.abre);
+  const fechaMins    = horaParaMin(horario.fecha);
+
+  if (horaMins < aberturaMins) {
+    mostrarAlerta(`Ainda não abrimos nesse dia. Funcionamos a partir das ${horario.abre}.`);
+    return;
+  }
+  if (horaMins > fechaMins) {
+    mostrarAlerta(`Já encerramos nesse horário. Fechamos às ${horario.fecha}.`);
+    return;
+  }
+  if (dataVal === hojeISO()) {
+    const agora    = new Date();
+    const agoraMins= agora.getHours() * 60 + agora.getMinutes();
+    if (horaMins <= agoraMins) {
+      mostrarAlerta('Escolha um horário futuro para a retirada.');
+      return;
+    }
+  }
+
+  // Formata a data para exibição (DD/MM/AAAA)
+  const [y, m, d] = dataVal.split('-');
+  const dataFormatada = `${d}/${m}/${y}`;
+  const textoFormatado = `${DIAS_PT[diaSemana]}, ${dataFormatada} às ${horaVal}`;
+
   estado.nomeCliente = nome;
+  estado.retirada    = { dataStr: dataVal, horaStr: horaVal, textoFormatado };
+
   mostrarTela('tela-cardapio');
 });
+
 document.getElementById('nome-cliente').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btn-entrar').click();
 });
@@ -104,7 +313,6 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 
 // ════════════════════════════════════════
 // RENDERIZAÇÃO DOS BLOCOS DE CENTO
-// Lê os data-* do HTML e monta o HTML interno
 // ════════════════════════════════════════
 
 function renderizarBlocosCento() {
@@ -118,23 +326,16 @@ function renderizarBlocosCento() {
       : [];
     const temSabores = sabores.length > 0;
 
-    // Preços proporcionais exatos (sem arredondamento)
-    const opcoes = [
-      { qtd: 25,  preco: precoCento * 25  / 100 },
-      { qtd: 50,  preco: precoCento * 50  / 100 },
-      { qtd: 75,  preco: precoCento * 75  / 100 },
-      { qtd: 100, preco: precoCento * 100 / 100 },
-    ];
-
-    // Botões de quantidade
-    const botoesQtd = opcoes.map(o => `
-      <button class="cn-btn-qtd" data-qtd="${o.qtd}">
-        <span class="cn-qtd-numero">${o.qtd}</span>
+    // Botões rápidos com preços proporcionais
+    const opcoesRapidas = [25, 50, 75, 100];
+    const botoesQtd = opcoesRapidas.map(qtd => `
+      <button class="cn-btn-qtd" data-qtd="${qtd}">
+        <span class="cn-qtd-numero">${qtd}</span>
         <span class="cn-qtd-label">unidades</span>
-        <span class="cn-qtd-preco">${formatarBRL(o.preco)}</span>
+        <span class="cn-qtd-preco">${formatarBRL(precoCento * qtd / 100)}</span>
       </button>`).join('');
 
-    // Bloco de sabores (sempre visível se houver sabores)
+    // Bloco de sabores (sempre visível se tiver sabores)
     let blocoSabores = '';
     if (temSabores) {
       const avisoMax = maxSabores > 0
@@ -160,9 +361,21 @@ function renderizarBlocosCento() {
     bloco.innerHTML = `
       <p class="cn-step-label">Quantas unidades?</p>
       <div class="cn-opcoes-qtd">${botoesQtd}</div>
+      <div class="cn-custom-bloco">
+        <span class="cn-custom-label">Ou informe outra quantidade:</span>
+        <div class="cn-custom-row">
+          <input
+            type="number"
+            class="cn-input-qtd"
+            min="1"
+            step="1"
+            placeholder="Ex: 500"
+          />
+          <button class="cn-btn-aplicar">OK</button>
+        </div>
+      </div>
       ${blocoSabores}`;
 
-    // Inicializa as interações
     inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores, temSabores);
   });
 }
@@ -176,12 +389,14 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
   let qtdSelecionada      = 0;
   let saboresSelecionados = [];
 
-  const btnQtds   = bloco.querySelectorAll('.cn-btn-qtd');
-  const btnSabores= bloco.querySelectorAll('.cn-btn-sabor');
-  const distBox   = bloco.querySelector('.cn-distribuicao');
-  const distItens = bloco.querySelector('.cn-distribuicao-itens');
+  const btnQtds    = bloco.querySelectorAll('.cn-btn-qtd');
+  const inputQtd   = bloco.querySelector('.cn-input-qtd');
+  const btnAplicar = bloco.querySelector('.cn-btn-aplicar');
+  const btnSabores = bloco.querySelectorAll('.cn-btn-sabor');
+  const distBox    = bloco.querySelector('.cn-distribuicao');
+  const distItens  = bloco.querySelector('.cn-distribuicao-itens');
 
-  // Salva ou remove categoria no estado global
+  // ── Salva no estado global ──
   function salvarEstado() {
     const valido = qtdSelecionada > 0 &&
       (!temSabores || saboresSelecionados.length > 0);
@@ -200,10 +415,10 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     atualizarTotais();
   }
 
-  // Atualiza o preview de distribuição
+  // ── Preview de distribuição ──
   function atualizarDistribuicao() {
     if (!temSabores || !distBox) return;
-    if (saboresSelecionados.length === 0 || qtdSelecionada === 0) {
+    if (!saboresSelecionados.length || !qtdSelecionada) {
       distBox.style.display = 'none';
       return;
     }
@@ -218,7 +433,7 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     distBox.style.display = 'block';
   }
 
-  // Atualiza visual dos botões de sabor (selecionado / bloqueado)
+  // ── Visual dos botões de sabor ──
   function atualizarBotoesSabor() {
     if (!temSabores) return;
     const limiteAtingido = maxSabores > 0 && saboresSelecionados.length >= maxSabores;
@@ -229,38 +444,75 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     });
   }
 
-  // ── Clique na quantidade ──
+  // ── Aplica uma quantidade (vinda de botão rápido ou input) ──
+  function aplicarQuantidade(qtd) {
+    qtdSelecionada = qtd;
+    atualizarDistribuicao();
+    atualizarBotoesSabor();
+    salvarEstado();
+  }
+
+  // ── Limpa toda a seleção do bloco ──
+  function limparTudo() {
+    qtdSelecionada      = 0;
+    saboresSelecionados = [];
+    btnQtds.forEach(b => b.classList.remove('selecionado'));
+    btnSabores.forEach(b => b.classList.remove('selecionado', 'bloqueado'));
+    inputQtd.value = '';
+    inputQtd.classList.remove('ativo');
+    if (distBox) distBox.style.display = 'none';
+    salvarEstado();
+  }
+
+  // ── Botões rápidos ──
   btnQtds.forEach(btn => {
     btn.addEventListener('click', () => {
       const novaQtd = parseInt(btn.dataset.qtd);
 
       if (qtdSelecionada === novaQtd) {
-        // Segundo clique na mesma opção = desmarcar tudo
-        qtdSelecionada        = 0;
-        saboresSelecionados   = [];
-        btnQtds.forEach(b => b.classList.remove('selecionado'));
-        btnSabores.forEach(b => b.classList.remove('selecionado', 'bloqueado'));
-        if (distBox) distBox.style.display = 'none';
-        salvarEstado();
+        // Segundo clique = desmarcar tudo
+        limparTudo();
         return;
       }
 
-      qtdSelecionada = novaQtd;
+      // Desmarca todos os botões e o input
       btnQtds.forEach(b => b.classList.remove('selecionado'));
-      btn.classList.add('selecionado');
+      inputQtd.value = '';
+      inputQtd.classList.remove('ativo');
 
-      atualizarDistribuicao();
-      atualizarBotoesSabor();
-      salvarEstado();
+      btn.classList.add('selecionado');
+      aplicarQuantidade(novaQtd);
     });
+  });
+
+  // ── Botão "OK" do campo livre ──
+  function aplicarInputQtd() {
+    const raw = inputQtd.value.trim();
+    const val = parseInt(raw);
+
+    if (!raw || isNaN(val) || val < 1) {
+      mostrarAlerta('Digite uma quantidade válida (mínimo 1).');
+      inputQtd.focus();
+      return;
+    }
+
+    // Desmarca botões rápidos
+    btnQtds.forEach(b => b.classList.remove('selecionado'));
+    inputQtd.classList.add('ativo');
+
+    aplicarQuantidade(val);
+  }
+
+  btnAplicar.addEventListener('click', aplicarInputQtd);
+  inputQtd.addEventListener('keydown', e => {
+    if (e.key === 'Enter') aplicarInputQtd();
   });
 
   // ── Clique no sabor ──
   btnSabores.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Avisa para escolher quantidade primeiro, mas não bloqueia
       if (qtdSelecionada === 0) {
-        mostrarAlerta('Escolha primeiro a quantidade (25, 50, 75 ou 100 unidades) acima.');
+        mostrarAlerta('Primeiro escolha a quantidade acima (botões rápidos ou campo livre).');
         return;
       }
 
@@ -314,17 +566,13 @@ function initItensUnitarios() {
 
     btnMais.addEventListener('click', () => {
       const n = parseInt(display.textContent) + 1;
-      display.textContent = n;
-      setItem(n);
-      atualizarTotais();
+      display.textContent = n; setItem(n); atualizarTotais();
     });
     btnMenos.addEventListener('click', () => {
       const atual = parseInt(display.textContent);
       if (atual <= 0) return;
       const n = atual - 1;
-      display.textContent = n;
-      setItem(n);
-      atualizarTotais();
+      display.textContent = n; setItem(n); atualizarTotais();
     });
   });
 }
@@ -362,7 +610,7 @@ function atualizarTotais() {
 }
 
 // ════════════════════════════════════════
-// VALIDAÇÃO
+// VALIDAÇÃO DO PEDIDO
 // ════════════════════════════════════════
 
 function validarPedido() {
@@ -372,13 +620,12 @@ function validarPedido() {
   for (const [catId, cat] of Object.entries(estado.pedido)) {
     if (cat.tipo === 'cento') {
       if (!cat.qtdSelecionada)
-        return `Em "${cat.titulo}": escolha a quantidade (25, 50, 75 ou 100).`;
+        return `Em "${cat.titulo}": escolha a quantidade.`;
 
-      // Verifica se a categoria tem sabores disponíveis
       const blocoEl = document.querySelector(`.cento-novo[data-cat="${catId}"]`);
       if (blocoEl) {
         const temSabores = blocoEl.dataset.sabores && blocoEl.dataset.sabores.trim() !== '';
-        if (temSabores && (!cat.saboresSelecionados || cat.saboresSelecionados.length === 0))
+        if (temSabores && (!cat.saboresSelecionados || !cat.saboresSelecionados.length))
           return `Em "${cat.titulo}": escolha pelo menos 1 sabor.`;
       }
     }
@@ -391,8 +638,8 @@ function validarPedido() {
 // ════════════════════════════════════════
 
 function construirResumo() {
-  document.getElementById('resumo-nome').textContent = estado.nomeCliente;
-  document.getElementById('resumo-data').textContent = dataHoraAtual();
+  document.getElementById('resumo-nome').textContent     = estado.nomeCliente;
+  document.getElementById('resumo-retirada').textContent = estado.retirada.textoFormatado;
 
   const lista = document.getElementById('resumo-lista');
   lista.innerHTML = '';
@@ -424,9 +671,8 @@ function construirResumo() {
           <span class="resumo-item-preco">${formatarBRL(v)}</span>
         </div>`;
 
-      if (cat.saboresSelecionados && cat.saboresSelecionados.length > 0) {
-        const dist = distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados);
-        for (const d of dist) {
+      if (cat.saboresSelecionados && cat.saboresSelecionados.length) {
+        for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados)) {
           html += `
             <div class="resumo-item" style="padding-left:24px">
               <span class="resumo-item-nome" style="color:var(--cinza-txt)">↳ ${d.sabor}</span>
@@ -464,7 +710,7 @@ document.getElementById('btn-voltar-cardapio').addEventListener('click', () => {
 function gerarMensagem() {
   let msg = `*Pedido – MC'DU Salgados*\n\n`;
   msg += `👤 *Cliente:* ${estado.nomeCliente}\n`;
-  msg += `📅 *Data/Hora:* ${dataHoraAtual()}\n`;
+  msg += `🕐 *Retirada:* ${estado.retirada.textoFormatado}\n`;
   msg += `─────────────────────────\n\n`;
 
   for (const cat of Object.values(estado.pedido)) {
@@ -475,7 +721,7 @@ function gerarMensagem() {
     } else {
       const v = cat.precoUnit * (cat.qtdSelecionada / 100);
       msg += `   • ${cat.qtdSelecionada} unidades — ${formatarBRL(v)}\n`;
-      if (cat.saboresSelecionados && cat.saboresSelecionados.length > 0) {
+      if (cat.saboresSelecionados && cat.saboresSelecionados.length) {
         for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados))
           msg += `     ↳ ${d.sabor}: ${d.qtd} un.\n`;
       }

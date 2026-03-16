@@ -19,10 +19,39 @@
         <span class="logo-sub">SALGADOS</span>
       </div>
       <p class="entrada-slogan">Monte seu pedido e envie pelo WhatsApp!</p>
+
+      <!-- Nome -->
       <div class="campo-grupo">
         <label for="nome-cliente">Seu nome</label>
         <input type="text" id="nome-cliente" placeholder="Ex: Maria Silva" autocomplete="off" maxlength="60" />
       </div>
+
+      <!-- Data de retirada -->
+      <div class="campo-grupo">
+        <label for="data-retirada">Data de retirada</label>
+        <input type="date" id="data-retirada" />
+        <span class="campo-hint" id="hint-dia"></span>
+      </div>
+
+      <!-- Horário de retirada -->
+      <div class="campo-grupo">
+        <label for="hora-retirada">Horário de retirada</label>
+        <input type="time" id="hora-retirada" />
+        <span class="campo-hint" id="hint-hora"></span>
+      </div>
+
+      <!-- Tabela de horários (referência visual) -->
+      <div class="horarios-ref">
+        <p class="horarios-ref-titulo">⏰ Horários de funcionamento</p>
+        <div class="horarios-grid">
+          <span>Seg – Ter</span><span>14h – 22h</span>
+          <span class="fechado">Quarta</span><span class="fechado">Fechado</span>
+          <span>Qui – Sex</span><span>14h – 22h</span>
+          <span>Sábado</span><span>14h – 22h</span>
+          <span>Domingo</span><span>09h – 18h</span>
+        </div>
+      </div>
+
       <button class="btn-primario" id="btn-entrar">Ver Cardápio →</button>
     </div>
   </div>
@@ -87,15 +116,6 @@
         </div>
       </section>
 
-      <!--
-        ITENS POR CENTO — renderizados pelo JS via data-attributes
-        data-cat         = id único da categoria
-        data-titulo      = nome legível para o resumo
-        data-preco-cento = preço por 100 unidades
-        data-max-sabores = máx de sabores diferentes (0 = sem limite)
-        data-sabores     = sabores separados por "|" (vazio = sem escolha)
-      -->
-
       <!-- MINI PASTÉIS -->
       <section class="categoria" id="mini-pasteis">
         <div class="cat-header">
@@ -126,7 +146,7 @@
         </div>
       </section>
 
-      <!-- SALGADOS ASSADOS (máx 5 sabores) -->
+      <!-- SALGADOS ASSADOS -->
       <section class="categoria" id="salgados-assados">
         <div class="cat-header">
           <h2>Salgados Assados</h2>
@@ -141,7 +161,7 @@
         </div>
       </section>
 
-      <!-- MINI PIZZAS (máx 5 sabores) -->
+      <!-- MINI PIZZAS -->
       <section class="categoria" id="mini-pizzas">
         <div class="cat-header">
           <h2>Mini Pizzas</h2>
@@ -156,7 +176,7 @@
         </div>
       </section>
 
-      <!-- MINI HAMBURGUINHO ASSADO (sem sabores) -->
+      <!-- MINI HAMBURGUINHO ASSADO -->
       <section class="categoria" id="mini-hamburguer">
         <div class="cat-header">
           <h2>Mini Hamburguinho Assado</h2>
@@ -171,7 +191,7 @@
         </div>
       </section>
 
-      <!-- BAGUETES RECHEADAS (unitário) -->
+      <!-- BAGUETES RECHEADAS -->
       <section class="categoria" id="baguetes">
         <div class="cat-header">
           <h2>Baguetes Recheadas</h2>
@@ -205,7 +225,7 @@
         </div>
       </section>
 
-      <!-- KIBE (sem sabores) -->
+      <!-- KIBE -->
       <section class="categoria" id="kibe">
         <div class="cat-header">
           <h2>Kibe</h2>
@@ -220,7 +240,7 @@
         </div>
       </section>
 
-      <!-- MINI EMPADA (sem sabores) -->
+      <!-- MINI EMPADA -->
       <section class="categoria" id="mini-empada">
         <div class="cat-header">
           <h2>Mini Empada</h2>
@@ -235,7 +255,7 @@
         </div>
       </section>
 
-      <!-- MINI LANCHE DE HAMBÚRGUER (unitário) -->
+      <!-- MINI LANCHE DE HAMBÚRGUER -->
       <section class="categoria" id="lanche-hamburguer">
         <div class="cat-header">
           <h2>Mini Lanche de Hambúrguer</h2>
@@ -249,8 +269,7 @@
         </div>
       </section>
 
-      <!-- DOCES — cada item vendido por cento usa cento-novo sem sabores,
-           exceto Pote Mini Churros que é por unidade (unitário normal) -->
+      <!-- DOCES -->
       <section class="categoria" id="doces">
         <div class="cat-header">
           <h2>Doces</h2>
@@ -298,7 +317,7 @@
           </div>
         </div>
 
-        <!-- Pote Mini Churros é por unidade, não por cento -->
+        <!-- Pote Mini Churros – unitário por pote -->
         <div class="doce-bloco doce-bloco-unitario">
           <div class="itens-unitarios">
             <div class="item-cento-direto" data-cat="doces-pote" data-sabor="Pote Mini Churros (15 unid)" data-preco="12.25" data-unidade="pote">
@@ -310,7 +329,6 @@
             </div>
           </div>
         </div>
-
       </section>
 
     </main>
@@ -334,7 +352,7 @@
     <div class="resumo-conteudo">
       <div class="resumo-info-cliente">
         <p><strong>Cliente:</strong> <span id="resumo-nome"></span></p>
-        <p><strong>Data/Hora:</strong> <span id="resumo-data"></span></p>
+        <p><strong>Retirada:</strong> <span id="resumo-retirada"></span></p>
       </div>
       <div id="resumo-lista"></div>
       <div class="resumo-total-bloco">

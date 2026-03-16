@@ -37,17 +37,19 @@ body {
 #tela-entrada {
   justify-content: center;
   align-items: center;
-  padding: 24px 20px;
+  padding: 32px 20px;
   background:
     radial-gradient(ellipse at top left, rgba(155,28,28,0.35) 0%, transparent 60%),
     radial-gradient(ellipse at bottom right, rgba(155,28,28,0.20) 0%, transparent 60%),
     var(--preto);
 }
+
 .entrada-wrapper {
   width: 100%; max-width: 400px;
   display: flex; flex-direction: column;
-  gap: 20px; align-items: center;
+  gap: 18px; align-items: center;
 }
+
 .logo-marca { text-align: center; line-height: 1; }
 .logo-mc {
   display: block;
@@ -60,24 +62,60 @@ body {
   font-family: var(--font-titulo); font-size: 32px;
   color: var(--vermelho-vivo); letter-spacing: 8px;
 }
+
 .entrada-slogan { color: var(--cinza-txt); font-size: 15px; text-align: center; line-height: 1.5; }
 
-.campo-grupo { width: 100%; display: flex; flex-direction: column; gap: 6px; }
+/* Campos do formulário */
+.campo-grupo { width: 100%; display: flex; flex-direction: column; gap: 5px; }
 .campo-grupo label {
-  font-size: 13px; font-weight: 700;
+  font-size: 12px; font-weight: 700;
   color: var(--amarelo); text-transform: uppercase; letter-spacing: 1px;
 }
 .campo-grupo input {
-  width: 100%; padding: 14px 16px;
+  width: 100%; padding: 13px 16px;
   background: var(--preto-card);
   border: 2px solid #2a2a2a; border-radius: var(--radius);
   color: var(--branco);
-  font-family: var(--font-corpo); font-size: 18px; font-weight: 600;
+  font-family: var(--font-corpo); font-size: 17px; font-weight: 600;
   outline: none; transition: border-color 0.2s;
+  /* Corrige cor do date/time picker em mobile */
+  color-scheme: dark;
 }
 .campo-grupo input:focus { border-color: var(--vermelho-vivo); }
 .campo-grupo input::placeholder { color: #444; }
+.campo-grupo input.invalido { border-color: #c0392b; }
+.campo-grupo input.valido   { border-color: var(--verde-wpp); }
 
+/* Hint/aviso abaixo do campo */
+.campo-hint {
+  font-size: 12px; font-weight: 700; min-height: 16px;
+  padding-left: 2px;
+}
+.campo-hint.erro  { color: #ff7070; }
+.campo-hint.ok    { color: var(--verde-wpp); }
+
+/* Tabela de horários de funcionamento */
+.horarios-ref {
+  width: 100%;
+  background: var(--preto-card);
+  border: 1px solid #2a2a2a; border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.horarios-ref-titulo {
+  font-size: 12px; font-weight: 700;
+  color: var(--cinza-txt); text-transform: uppercase;
+  letter-spacing: 0.8px; margin-bottom: 8px;
+}
+.horarios-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+.horarios-grid span {
+  font-size: 13px; font-weight: 600; color: var(--branco); padding: 2px 0;
+}
+.horarios-grid span.fechado { color: var(--vermelho-vivo); }
+
+/* Botão primário */
 .btn-primario {
   width: 100%; padding: 16px;
   background: var(--vermelho-vivo); color: #fff;
@@ -187,7 +225,7 @@ body {
 }
 .cat-desc { padding: 10px 16px 0; font-size: 13px; color: var(--cinza-txt); line-height: 1.5; }
 
-/* ── Itens unitários ── */
+/* Itens unitários */
 .itens-unitarios { padding: 8px 0; }
 
 .item-unitario,
@@ -219,22 +257,20 @@ body {
 .qtd-valor { min-width: 36px; text-align: center; font-weight: 800; font-size: 17px; }
 
 /* ════════════════════════════════
-   BLOCO DE CENTO (novo sistema)
+   BLOCO DE CENTO (sistema escalável)
 ════════════════════════════════ */
 .cento-novo { padding: 16px; }
 
-/* Passo 1 – opções de quantidade em grid 2×2 */
 .cn-step-label {
   font-size: 12px; font-weight: 700;
   color: var(--cinza-txt); text-transform: uppercase;
   letter-spacing: 0.8px; margin-bottom: 10px;
 }
 
+/* Botões rápidos: 4 opções em grid 2×2 */
 .cn-opcoes-qtd {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-bottom: 18px;
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px; margin-bottom: 12px;
 }
 
 .cn-btn-qtd {
@@ -243,8 +279,6 @@ body {
   gap: 3px; padding: 12px 8px;
   background: var(--preto-item);
   border: 2px solid #333; border-radius: var(--radius);
-  color: var(--branco);
-  font-family: var(--font-corpo);
   cursor: pointer; transition: all 0.18s;
   -webkit-tap-highlight-color: transparent;
 }
@@ -253,30 +287,59 @@ body {
   border-color: var(--amarelo);
   background: rgba(245,166,35,0.12);
 }
-
 .cn-qtd-numero {
   font-family: var(--font-titulo); font-size: 24px; line-height: 1;
   color: var(--branco);
 }
 .cn-btn-qtd.selecionado .cn-qtd-numero { color: var(--amarelo); }
-
 .cn-qtd-label {
   font-size: 10px; font-weight: 700;
   color: var(--cinza-txt); text-transform: uppercase; letter-spacing: 0.5px;
 }
+.cn-qtd-preco { font-size: 13px; font-weight: 800; color: var(--verde-wpp); }
 
-.cn-qtd-preco {
-  font-size: 13px; font-weight: 800;
-  color: var(--verde-wpp);
+/* Campo livre para quantidade personalizada */
+.cn-custom-bloco {
+  margin-bottom: 4px;
 }
+.cn-custom-label {
+  font-size: 11px; font-weight: 700;
+  color: var(--cinza-txt); text-transform: uppercase;
+  letter-spacing: 0.7px; margin-bottom: 7px; display: block;
+}
+.cn-custom-row {
+  display: flex; gap: 8px; align-items: stretch;
+}
+.cn-input-qtd {
+  flex: 1; padding: 11px 14px;
+  background: var(--preto-item);
+  border: 2px solid #333; border-radius: var(--radius);
+  color: var(--branco);
+  font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
+  outline: none; transition: border-color 0.2s;
+  /* Remove setas do number input */
+  -moz-appearance: textfield;
+}
+.cn-input-qtd::-webkit-outer-spin-button,
+.cn-input-qtd::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.cn-input-qtd:focus { border-color: var(--amarelo); }
+.cn-input-qtd.ativo { border-color: var(--amarelo); background: rgba(245,166,35,0.08); }
+
+.cn-btn-aplicar {
+  padding: 11px 18px;
+  background: var(--vermelho-vivo); color: #fff;
+  font-family: var(--font-titulo); font-size: 18px; letter-spacing: 1px;
+  border: none; border-radius: var(--radius);
+  cursor: pointer; white-space: nowrap;
+  -webkit-tap-highlight-color: transparent; transition: background 0.15s;
+  flex-shrink: 0;
+}
+.cn-btn-aplicar:active { background: var(--vermelho); }
 
 /* Divisor */
-.cn-divisor {
-  border: none; border-top: 1px solid #2a2a2a;
-  margin-bottom: 16px;
-}
+.cn-divisor { border: none; border-top: 1px solid #2a2a2a; margin: 16px 0 14px; }
 
-/* Passo 2 – sabores (sempre visível) */
+/* Área de sabores */
 .cn-sabores-area { display: block; }
 
 .cn-aviso-max {
@@ -305,20 +368,18 @@ body {
 .cn-btn-sabor:active { transform: scale(0.95); }
 .cn-btn-sabor.selecionado {
   background: var(--vermelho-vivo);
-  border-color: var(--vermelho-vivo);
-  color: #fff;
+  border-color: var(--vermelho-vivo); color: #fff;
 }
 .cn-btn-sabor.bloqueado {
   opacity: 0.35; cursor: not-allowed; pointer-events: none;
 }
 
-/* Preview de distribuição automática */
+/* Preview da distribuição automática */
 .cn-distribuicao {
   background: rgba(37,211,102,0.08);
   border: 1px solid rgba(37,211,102,0.25);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  display: none; /* aparece só quando há qtd + sabores */
+  border-radius: var(--radius); padding: 12px 14px;
+  display: none;
 }
 .cn-distribuicao-titulo {
   font-size: 12px; font-weight: 700;
@@ -333,29 +394,20 @@ body {
 .cn-dist-nome { color: var(--branco); font-weight: 600; }
 .cn-dist-qtd { font-family: var(--font-titulo); font-size: 18px; color: var(--amarelo); }
 
-/* ── Blocos especiais para Doces ── */
-.doce-bloco {
-  border-bottom: 1px solid #252525;
-  padding-bottom: 4px;
-}
+/* Blocos de Doces */
+.doce-bloco { border-bottom: 1px solid #252525; padding-bottom: 4px; }
 .doce-bloco:last-child { border-bottom: none; }
-
 .doce-bloco-unitario { padding: 0; }
-
 .doce-titulo-row {
   display: flex; align-items: center;
   justify-content: space-between;
-  padding: 14px 16px 0;
-  gap: 8px;
+  padding: 14px 16px 0; gap: 8px;
 }
-.doce-nome {
-  font-weight: 700; font-size: 16px; color: var(--branco);
-}
+.doce-nome { font-weight: 700; font-size: 16px; color: var(--branco); }
 .doce-preco-ref {
   font-size: 12px; font-weight: 700; color: var(--amarelo);
   background: rgba(245,166,35,0.1);
-  padding: 3px 9px; border-radius: 20px;
-  white-space: nowrap;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
 }
 
 /* ════════════════════════════════
