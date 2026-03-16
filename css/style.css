@@ -311,6 +311,15 @@ body {
   display: flex; gap: 8px; align-items: stretch;
 }
 .cn-input-qtd {
+  flex: 0 1 140px; padding: 11px 14px;
+  background: var(--preto-item);
+  border: 2px solid #333; border-radius: var(--radius);
+  color: var(--branco);
+  font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
+  outline: none; transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+.cn-input-qtd {
   flex: 1; padding: 11px 14px;
   background: var(--preto-item);
   border: 2px solid #333; border-radius: var(--radius);
