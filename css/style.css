@@ -78,7 +78,6 @@ body {
   color: var(--branco);
   font-family: var(--font-corpo); font-size: 17px; font-weight: 600;
   outline: none; transition: border-color 0.2s;
-  /* Corrige cor do date/time picker em mobile */
   color-scheme: dark;
 }
 .campo-grupo input:focus { border-color: var(--vermelho-vivo); }
@@ -257,7 +256,7 @@ body {
 .qtd-valor { min-width: 36px; text-align: center; font-weight: 800; font-size: 17px; }
 
 /* ════════════════════════════════
-   BLOCO DE CENTO (sistema escalável)
+   BLOCO DE CENTO
 ════════════════════════════════ */
 .cento-novo { padding: 16px; }
 
@@ -267,7 +266,6 @@ body {
   letter-spacing: 0.8px; margin-bottom: 10px;
 }
 
-/* Botões rápidos: 4 opções em grid 2×2 */
 .cn-opcoes-qtd {
   display: grid; grid-template-columns: repeat(2, 1fr);
   gap: 8px; margin-bottom: 12px;
@@ -299,9 +297,7 @@ body {
 .cn-qtd-preco { font-size: 13px; font-weight: 800; color: var(--verde-wpp); }
 
 /* Campo livre para quantidade personalizada */
-.cn-custom-bloco {
-  margin-bottom: 4px;
-}
+.cn-custom-bloco { margin-bottom: 4px; }
 .cn-custom-label {
   font-size: 11px; font-weight: 700;
   color: var(--cinza-txt); text-transform: uppercase;
@@ -317,19 +313,8 @@ body {
   color: var(--branco);
   font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
   outline: none; transition: border-color 0.2s;
-  appearance: textfield;
   -moz-appearance: textfield;
-}
-.cn-input-qtd {
-  flex: 1; padding: 11px 14px;
-  background: var(--preto-item);
-  border: 2px solid #333; border-radius: var(--radius);
-  color: var(--branco);
-  font-family: var(--font-corpo); font-size: 18px; font-weight: 800;
-  outline: none; transition: border-color 0.2s;
-  /* Remove setas do number input */
   appearance: textfield;
-  -moz-appearance: textfield;
 }
 .cn-input-qtd::-webkit-outer-spin-button,
 .cn-input-qtd::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -524,3 +509,38 @@ body {
 button:focus-visible, input:focus-visible {
   outline: 2px solid var(--amarelo); outline-offset: 2px;
 }
+
+/* ════════════════════════════════
+   SELECT TIPO DE PEDIDO
+════════════════════════════════ */
+.form-select {
+  width: 100%; padding: 13px 40px 13px 16px;
+  background: var(--preto-card);
+  border: 2px solid #2a2a2a; border-radius: var(--radius);
+  color: var(--branco);
+  font-family: var(--font-corpo); font-size: 17px; font-weight: 600;
+  outline: none; transition: border-color 0.2s;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  /* Seta customizada na cor amarela */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath fill='none' stroke='%23f5a623' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  color-scheme: dark;
+}
+.form-select:focus { border-color: var(--vermelho-vivo); }
+.form-select option { background: var(--preto-card); color: var(--branco); }
+
+/* Campo de endereço (reutiliza estilo de .campo-grupo input) */
+#endereco-entrega {
+  width: 100%; padding: 13px 16px;
+  background: var(--preto-card);
+  border: 2px solid #2a2a2a; border-radius: var(--radius);
+  color: var(--branco);
+  font-family: var(--font-corpo); font-size: 17px; font-weight: 600;
+  outline: none; transition: border-color 0.2s;
+  color-scheme: dark;
+}
+#endereco-entrega:focus { border-color: var(--vermelho-vivo); }
+#endereco-entrega::placeholder { color: #444; }

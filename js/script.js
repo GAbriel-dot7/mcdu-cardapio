@@ -1,12 +1,13 @@
 /**
  * MC'DU SALGADOS – Cardápio Digital
  *
- * NOVIDADES NESTA VERSÃO:
- *  1. Tela de entrada: nome + data + hora de retirada com validação de
- *     horário de funcionamento (quarta fechado, horários por dia da semana)
- *  2. Sistema de cento escalável: botões rápidos (25/50/75/100) +
- *     campo numérico livre para qualquer quantidade positiva (ex: 500, 1000)
- *     Preço: precoCento × (quantidade / 100) — sempre exato
+ * ATUALIZAÇÕES NESTA VERSÃO:
+ *  1. Tela de resumo: seleção de Retirada ou Entrega
+ *     - Entrega exige endereço obrigatório
+ *  2. Mensagem WhatsApp reformatada para impressão térmica:
+ *     - Sem emojis
+ *     - Blocos separados por linha tracejada
+ *     - Texto limpo e legível
  */
 
 // ════════════════════════════════════════
@@ -15,11 +16,6 @@
 
 const WHATSAPP_NUMERO = '5519993985276';
 
-/**
- * Horários de funcionamento por dia da semana.
- * Índice 0 = domingo, 1 = segunda, ..., 6 = sábado.
- * null = fechado.
- */
 const HORARIOS_FUNC = {
   0: { abre: '09:00', fecha: '18:00' }, // Domingo
   1: { abre: '14:00', fecha: '22:00' }, // Segunda
@@ -40,16 +36,6 @@ const estado = {
   nomeCliente: '',
   retirada: { dataStr: '', horaStr: '', textoFormatado: '' },
   pedido: {},
-  /*
-    pedido[catId] = {
-      titulo:              string,
-      tipo:                'unitario' | 'cento',
-      precoUnit:           number,
-      itens:               [{sabor, qtd}],       // 'unitario'
-      qtdSelecionada:      number,               // 'cento'
-      saboresSelecionados: string[],             // 'cento'
-    }
-  */
 };
 
 // ════════════════════════════════════════
@@ -58,11 +44,6 @@ const estado = {
 
 function formatarBRL(v) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
-function dataHoraAtual() {
-  const d = new Date();
-  return `${d.toLocaleDateString('pt-BR')} às ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
 function mostrarAlerta(msg) {
@@ -79,11 +60,6 @@ function mostrarTela(id) {
   window.scrollTo(0, 0);
 }
 
-/**
- * Distribui `total` unidades entre `sabores` igualmente.
- * Resto vai 1 a 1 para os primeiros sabores.
- * Ex: distribuir(100, ['A','B','C']) → 34/33/33
- */
 function distribuirSabores(total, sabores) {
   if (!sabores.length) return [];
   const base  = Math.floor(total / sabores.length);
@@ -91,7 +67,6 @@ function distribuirSabores(total, sabores) {
   return sabores.map((sabor, i) => ({ sabor, qtd: base + (i < resto ? 1 : 0) }));
 }
 
-/** Retorna a data de hoje no formato YYYY-MM-DD */
 function hojeISO() {
   const d = new Date();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -99,15 +74,12 @@ function hojeISO() {
   return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
-/** Converte "HH:MM" em minutos desde meia-noite */
 function horaParaMin(hhmm) {
   const [h, m] = hhmm.split(':').map(Number);
   return h * 60 + m;
 }
 
-/** Retorna o índice do dia da semana (0-6) para uma string "YYYY-MM-DD" */
 function diaSemanaDeISO(isoStr) {
-  // Usar UTC para evitar problemas de fuso horário no parsing
   const [y, m, d] = isoStr.split('-').map(Number);
   return new Date(y, m - 1, d).getDay();
 }
@@ -116,18 +88,13 @@ function diaSemanaDeISO(isoStr) {
 // TELA DE ENTRADA – VALIDAÇÃO DE HORÁRIO
 // ════════════════════════════════════════
 
-const inputData  = document.getElementById('data-retirada');
-const inputHora  = document.getElementById('hora-retirada');
-const hintDia    = document.getElementById('hint-dia');
-const hintHora   = document.getElementById('hint-hora');
+const inputData = document.getElementById('data-retirada');
+const inputHora = document.getElementById('hora-retirada');
+const hintDia   = document.getElementById('hint-dia');
+const hintHora  = document.getElementById('hint-hora');
 
-// Define data mínima = hoje
 inputData.min = hojeISO();
 
-/**
- * Atualiza o hint de dia e os limites do campo de hora.
- * Chamado sempre que o usuário muda a data.
- */
 function onDataChange() {
   const dataVal = inputData.value;
   inputData.classList.remove('invalido', 'valido');
@@ -146,7 +113,6 @@ function onDataChange() {
   const horario   = HORARIOS_FUNC[diaSemana];
 
   if (!horario) {
-    // Fechado
     inputData.classList.add('invalido');
     hintDia.className = 'campo-hint erro';
     hintDia.textContent = `❌ ${DIAS_PT[diaSemana]} – Fechado`;
@@ -158,16 +124,12 @@ function onDataChange() {
   hintDia.className = 'campo-hint ok';
   hintDia.textContent = `✔ ${DIAS_PT[diaSemana]} – ${horario.abre} às ${horario.fecha}`;
 
-  // Define limites de hora
   let minHora = horario.abre;
-
-  // Se a data escolhida é hoje, o horário mínimo é o maior entre
-  // a abertura e o horário atual + 1 minuto (não permite hora passada)
   if (dataVal === hojeISO()) {
-    const agora  = new Date();
-    const agoraMin = agora.getHours() * 60 + agora.getMinutes() + 1;
-    const aberturaMin = horaParaMin(horario.abre);
-    const efetMin = Math.max(agoraMin, aberturaMin);
+    const agora      = new Date();
+    const agoraMin   = agora.getHours() * 60 + agora.getMinutes() + 1;
+    const abertMin   = horaParaMin(horario.abre);
+    const efetMin    = Math.max(agoraMin, abertMin);
     const hh = String(Math.floor(efetMin / 60)).padStart(2, '0');
     const mm = String(efetMin % 60).padStart(2, '0');
     minHora = `${hh}:${mm}`;
@@ -177,9 +139,6 @@ function onDataChange() {
   inputHora.max = horario.fecha;
 }
 
-/**
- * Valida o horário escolhido e atualiza o hint.
- */
 function onHoraChange() {
   const dataVal = inputData.value;
   const horaVal = inputHora.value;
@@ -190,15 +149,14 @@ function onHoraChange() {
 
   if (!dataVal || !horaVal) return;
 
-  const diaSemana = diaSemanaDeISO(dataVal);
-  const horario   = HORARIOS_FUNC[diaSemana];
+  const diaSemana    = diaSemanaDeISO(dataVal);
+  const horario      = HORARIOS_FUNC[diaSemana];
   if (!horario) return;
 
-  const horaMins    = horaParaMin(horaVal);
-  const aberturaMins= horaParaMin(horario.abre);
-  const fechaMins   = horaParaMin(horario.fecha);
+  const horaMins     = horaParaMin(horaVal);
+  const aberturaMins = horaParaMin(horario.abre);
+  const fechaMins    = horaParaMin(horario.fecha);
 
-  // Verifica se é hoje e hora passada
   let minPermitido = aberturaMins;
   if (dataVal === hojeISO()) {
     const agora = new Date();
@@ -208,11 +166,9 @@ function onHoraChange() {
   if (horaMins < minPermitido) {
     inputHora.classList.add('invalido');
     hintHora.className = 'campo-hint erro';
-    if (dataVal === hojeISO() && horaMins < horaParaMin(new Date().getHours() + ':' + new Date().getMinutes())) {
-      hintHora.textContent = '❌ Horário já passou. Escolha um horário futuro.';
-    } else {
-      hintHora.textContent = `❌ Ainda não abrimos. Abre às ${horario.abre}.`;
-    }
+    hintHora.textContent = dataVal === hojeISO()
+      ? '❌ Horário já passou. Escolha um horário futuro.'
+      : `❌ Ainda não abrimos. Abre às ${horario.abre}.`;
     return;
   }
 
@@ -225,7 +181,7 @@ function onHoraChange() {
 
   inputHora.classList.add('valido');
   hintHora.className = 'campo-hint ok';
-  hintHora.textContent = `✔ Horário válido`;
+  hintHora.textContent = '✔ Horário válido';
 }
 
 inputData.addEventListener('change', onDataChange);
@@ -240,25 +196,15 @@ document.getElementById('btn-entrar').addEventListener('click', () => {
   const dataVal = inputData.value;
   const horaVal = inputHora.value;
 
-  if (!nome) {
-    mostrarAlerta('Por favor, informe seu nome.');
-    return;
-  }
-  if (!dataVal) {
-    mostrarAlerta('Escolha a data de retirada.');
-    return;
-  }
-  if (!horaVal) {
-    mostrarAlerta('Escolha o horário de retirada.');
-    return;
-  }
+  if (!nome)    { mostrarAlerta('Por favor, informe seu nome.'); return; }
+  if (!dataVal) { mostrarAlerta('Escolha a data de retirada.'); return; }
+  if (!horaVal) { mostrarAlerta('Escolha o horário de retirada.'); return; }
 
-  // Valida novamente programaticamente (campo pode ter sido digitado manualmente)
   const diaSemana = diaSemanaDeISO(dataVal);
   const horario   = HORARIOS_FUNC[diaSemana];
 
   if (!horario) {
-    mostrarAlerta(`${DIAS_PT[diaSemana]} é dia de folga! Escolha outra data.`);
+    mostrarAlerta(`${DIAS_PT[diaSemana]} e dia de folga! Escolha outra data.`);
     return;
   }
 
@@ -267,26 +213,25 @@ document.getElementById('btn-entrar').addEventListener('click', () => {
   const fechaMins    = horaParaMin(horario.fecha);
 
   if (horaMins < aberturaMins) {
-    mostrarAlerta(`Ainda não abrimos nesse dia. Funcionamos a partir das ${horario.abre}.`);
+    mostrarAlerta(`Ainda nao abrimos nesse dia. Funcionamos a partir das ${horario.abre}.`);
     return;
   }
   if (horaMins > fechaMins) {
-    mostrarAlerta(`Já encerramos nesse horário. Fechamos às ${horario.fecha}.`);
+    mostrarAlerta(`Ja encerramos nesse horario. Fechamos as ${horario.fecha}.`);
     return;
   }
   if (dataVal === hojeISO()) {
-    const agora    = new Date();
-    const agoraMins= agora.getHours() * 60 + agora.getMinutes();
+    const agora     = new Date();
+    const agoraMins = agora.getHours() * 60 + agora.getMinutes();
     if (horaMins <= agoraMins) {
-      mostrarAlerta('Escolha um horário futuro para a retirada.');
+      mostrarAlerta('Escolha um horario futuro para a retirada.');
       return;
     }
   }
 
-  // Formata a data para exibição (DD/MM/AAAA)
-  const [y, m, d] = dataVal.split('-');
-  const dataFormatada = `${d}/${m}/${y}`;
-  const textoFormatado = `${DIAS_PT[diaSemana]}, ${dataFormatada} às ${horaVal}`;
+  const [y, m, d]  = dataVal.split('-');
+  const dataFormatada   = `${d}/${m}/${y}`;
+  const textoFormatado  = `${DIAS_PT[diaSemana]}, ${dataFormatada} as ${horaVal}`;
 
   estado.nomeCliente = nome;
   estado.retirada    = { dataStr: dataVal, horaStr: horaVal, textoFormatado };
@@ -296,6 +241,15 @@ document.getElementById('btn-entrar').addEventListener('click', () => {
 
 document.getElementById('nome-cliente').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('btn-entrar').click();
+});
+
+// ════════════════════════════════════════
+// TIPO DE PEDIDO – mostrar/ocultar endereço
+// ════════════════════════════════════════
+
+document.getElementById('tipo-pedido').addEventListener('change', function () {
+  document.getElementById('grupo-endereco').style.display =
+    this.value === 'entrega' ? 'block' : 'none';
 });
 
 // ════════════════════════════════════════
@@ -326,7 +280,6 @@ function renderizarBlocosCento() {
       : [];
     const temSabores = sabores.length > 0;
 
-    // Botões rápidos com preços proporcionais
     const opcoesRapidas = [25, 50, 75, 100];
     const botoesQtd = opcoesRapidas.map(qtd => `
       <button class="cn-btn-qtd" data-qtd="${qtd}">
@@ -335,11 +288,10 @@ function renderizarBlocosCento() {
         <span class="cn-qtd-preco">${formatarBRL(precoCento * qtd / 100)}</span>
       </button>`).join('');
 
-    // Bloco de sabores (sempre visível se tiver sabores)
     let blocoSabores = '';
     if (temSabores) {
       const avisoMax = maxSabores > 0
-        ? `<span class="cn-aviso-max">Escolha até ${maxSabores} sabores</span>`
+        ? `<span class="cn-aviso-max">Escolha ate ${maxSabores} sabores</span>`
         : '';
       const btnsSabores = sabores
         .map(s => `<button class="cn-btn-sabor" data-sabor="${s}">${s}</button>`)
@@ -352,7 +304,7 @@ function renderizarBlocosCento() {
           ${avisoMax}
           <div class="cn-sabores-lista">${btnsSabores}</div>
           <div class="cn-distribuicao">
-            <p class="cn-distribuicao-titulo">✦ Distribuição automática</p>
+            <p class="cn-distribuicao-titulo">Distribuicao automatica</p>
             <div class="cn-distribuicao-itens"></div>
           </div>
         </div>`;
@@ -364,13 +316,7 @@ function renderizarBlocosCento() {
       <div class="cn-custom-bloco">
         <span class="cn-custom-label">Ou informe outra quantidade:</span>
         <div class="cn-custom-row">
-          <input
-            type="number"
-            class="cn-input-qtd"
-            min="1"
-            step="1"
-            placeholder="Ex: 500"
-          />
+          <input type="number" class="cn-input-qtd" min="1" step="1" placeholder="Ex: 500" />
           <button class="cn-btn-aplicar">OK</button>
         </div>
       </div>
@@ -396,7 +342,6 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
   const distBox    = bloco.querySelector('.cn-distribuicao');
   const distItens  = bloco.querySelector('.cn-distribuicao-itens');
 
-  // ── Salva no estado global ──
   function salvarEstado() {
     const valido = qtdSelecionada > 0 &&
       (!temSabores || saboresSelecionados.length > 0);
@@ -415,7 +360,6 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     atualizarTotais();
   }
 
-  // ── Preview de distribuição ──
   function atualizarDistribuicao() {
     if (!temSabores || !distBox) return;
     if (!saboresSelecionados.length || !qtdSelecionada) {
@@ -433,7 +377,6 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     distBox.style.display = 'block';
   }
 
-  // ── Visual dos botões de sabor ──
   function atualizarBotoesSabor() {
     if (!temSabores) return;
     const limiteAtingido = maxSabores > 0 && saboresSelecionados.length >= maxSabores;
@@ -444,7 +387,6 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     });
   }
 
-  // ── Aplica uma quantidade (vinda de botão rápido ou input) ──
   function aplicarQuantidade(qtd) {
     qtdSelecionada = qtd;
     atualizarDistribuicao();
@@ -452,7 +394,6 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     salvarEstado();
   }
 
-  // ── Limpa toda a seleção do bloco ──
   function limparTudo() {
     qtdSelecionada      = 0;
     saboresSelecionados = [];
@@ -464,69 +405,54 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     salvarEstado();
   }
 
-  // ── Botões rápidos ──
+  // Botões rápidos
   btnQtds.forEach(btn => {
     btn.addEventListener('click', () => {
       const novaQtd = parseInt(btn.dataset.qtd);
+      if (qtdSelecionada === novaQtd) { limparTudo(); return; }
 
-      if (qtdSelecionada === novaQtd) {
-        // Segundo clique = desmarcar tudo
-        limparTudo();
-        return;
-      }
-
-      // Desmarca todos os botões e o input
       btnQtds.forEach(b => b.classList.remove('selecionado'));
       inputQtd.value = '';
       inputQtd.classList.remove('ativo');
-
       btn.classList.add('selecionado');
       aplicarQuantidade(novaQtd);
     });
   });
 
-  // ── Botão "OK" do campo livre ──
+  // Campo livre + botão OK
   function aplicarInputQtd() {
     const raw = inputQtd.value.trim();
     const val = parseInt(raw);
-
     if (!raw || isNaN(val) || val < 1) {
-      mostrarAlerta('Digite uma quantidade válida (mínimo 1).');
+      mostrarAlerta('Digite uma quantidade valida (minimo 1).');
       inputQtd.focus();
       return;
     }
-
-    // Desmarca botões rápidos
     btnQtds.forEach(b => b.classList.remove('selecionado'));
     inputQtd.classList.add('ativo');
-
     aplicarQuantidade(val);
   }
 
   btnAplicar.addEventListener('click', aplicarInputQtd);
-  inputQtd.addEventListener('keydown', e => {
-    if (e.key === 'Enter') aplicarInputQtd();
-  });
+  inputQtd.addEventListener('keydown', e => { if (e.key === 'Enter') aplicarInputQtd(); });
 
-  // ── Clique no sabor ──
+  // Clique no sabor
   btnSabores.forEach(btn => {
     btn.addEventListener('click', () => {
       if (qtdSelecionada === 0) {
-        mostrarAlerta('Primeiro escolha a quantidade acima (botões rápidos ou campo livre).');
+        mostrarAlerta('Primeiro escolha a quantidade acima (botoes rapidos ou campo livre).');
         return;
       }
-
       const sabor = btn.dataset.sabor;
       if (saboresSelecionados.includes(sabor)) {
         saboresSelecionados = saboresSelecionados.filter(s => s !== sabor);
       } else {
         if (maxSabores > 0 && saboresSelecionados.length >= maxSabores) {
-          mostrarAlerta(`Máximo de ${maxSabores} sabores para esta categoria!\nDesmarque um para trocar.`);
+          mostrarAlerta(`Maximo de ${maxSabores} sabores para esta categoria! Desmarque um para trocar.`);
           return;
         }
         saboresSelecionados.push(sabor);
       }
-
       atualizarBotoesSabor();
       atualizarDistribuicao();
       salvarEstado();
@@ -615,7 +541,7 @@ function atualizarTotais() {
 
 function validarPedido() {
   if (Object.keys(estado.pedido).length === 0)
-    return 'Seu pedido está vazio! Selecione pelo menos um item.';
+    return 'Seu pedido esta vazio! Selecione pelo menos um item.';
 
   for (const [catId, cat] of Object.entries(estado.pedido)) {
     if (cat.tipo === 'cento') {
@@ -640,6 +566,12 @@ function validarPedido() {
 function construirResumo() {
   document.getElementById('resumo-nome').textContent     = estado.nomeCliente;
   document.getElementById('resumo-retirada').textContent = estado.retirada.textoFormatado;
+
+  // Reseta tipo de pedido e endereço ao abrir o resumo
+  document.getElementById('tipo-pedido').value = '';
+  document.getElementById('endereco-entrega').value = '';
+  document.getElementById('grupo-endereco').style.display = 'none';
+  document.getElementById('alerta-resumo').style.display  = 'none';
 
   const lista = document.getElementById('resumo-lista');
   lista.innerHTML = '';
@@ -705,46 +637,94 @@ document.getElementById('btn-voltar-cardapio').addEventListener('click', () => {
 
 // ════════════════════════════════════════
 // MENSAGEM WHATSAPP
+// Formato limpo para impressão térmica — sem emojis
 // ════════════════════════════════════════
 
 function gerarMensagem() {
-  let msg = `*Pedido – MC'DU Salgados*\n\n`;
-  msg += `👤 *Cliente:* ${estado.nomeCliente}\n`;
-  msg += `🕐 *Retirada:* ${estado.retirada.textoFormatado}\n`;
-  msg += `─────────────────────────\n\n`;
+  const tipoPedido = document.getElementById('tipo-pedido').value;
+  const endereco   = document.getElementById('endereco-entrega').value.trim();
 
+  let msg = `PEDIDO - MC'DU SALGADOS\n`;
+  msg += `--------------------------------\n`;
+  msg += `Cliente: ${estado.nomeCliente}\n`;
+
+  if (tipoPedido === 'retirada') {
+    msg += `Tipo: RETIRADA\n`;
+    msg += `Horario: ${estado.retirada.textoFormatado}\n`;
+  } else {
+    msg += `Tipo: ENTREGA\n`;
+    msg += `Endereco: ${endereco}\n`;
+    msg += `Horario: ${estado.retirada.textoFormatado}\n`;
+  }
+
+  msg += `--------------------------------\n\n`;
+
+  // Itens do pedido
   for (const cat of Object.values(estado.pedido)) {
-    msg += `📦 *${cat.titulo}*\n`;
+    msg += `${cat.titulo.toUpperCase()}\n`;
+
     if (cat.tipo === 'unitario') {
-      for (const item of cat.itens)
-        msg += `   • ${item.sabor}: ${item.qtd}x — ${formatarBRL(cat.precoUnit * item.qtd)}\n`;
+      for (const item of cat.itens) {
+        const v = cat.precoUnit * item.qtd;
+        msg += `- ${item.sabor}: ${item.qtd}x  ${formatarBRL(v)}\n`;
+      }
     } else {
       const v = cat.precoUnit * (cat.qtdSelecionada / 100);
-      msg += `   • ${cat.qtdSelecionada} unidades — ${formatarBRL(v)}\n`;
+      msg += `- ${cat.qtdSelecionada} unidades  ${formatarBRL(v)}\n`;
       if (cat.saboresSelecionados && cat.saboresSelecionados.length) {
-        for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados))
-          msg += `     ↳ ${d.sabor}: ${d.qtd} un.\n`;
+        for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados)) {
+          msg += `  > ${d.sabor}: ${d.qtd} un.\n`;
+        }
       }
     }
     msg += '\n';
   }
 
-  msg += `─────────────────────────\n`;
-  msg += `💰 *TOTAL: ${formatarBRL(calcularTotal())}*\n`;
-  msg += `─────────────────────────\n`;
-  msg += `_Pedido enviado pelo cardápio digital MC'DU Salgados_`;
+  msg += `--------------------------------\n`;
+  msg += `TOTAL: ${formatarBRL(calcularTotal())}\n`;
+  msg += `--------------------------------\n`;
+  msg += `Pedido via cardapio digital MC'DU SALGADOS`;
+
   return msg;
 }
 
+// ════════════════════════════════════════
+// ENVIO WHATSAPP – com validação de tipo/endereço
+// ════════════════════════════════════════
+
 document.getElementById('btn-whatsapp').addEventListener('click', () => {
-  const erro = validarPedido();
-  if (erro) {
-    const el = document.getElementById('alerta-resumo');
-    el.textContent = erro; el.style.display = 'block';
+  const tipoPedido = document.getElementById('tipo-pedido').value;
+  const endereco   = document.getElementById('endereco-entrega').value.trim();
+  const alertaEl   = document.getElementById('alerta-resumo');
+
+  // Valida itens
+  const erroPedido = validarPedido();
+  if (erroPedido) {
+    alertaEl.textContent = erroPedido;
+    alertaEl.style.display = 'block';
     return;
   }
-  document.getElementById('alerta-resumo').style.display = 'none';
-  window.open(`https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(gerarMensagem())}`, '_blank');
+
+  // Valida tipo de pedido
+  if (!tipoPedido) {
+    alertaEl.textContent = 'Selecione o tipo de pedido: Retirada ou Entrega.';
+    alertaEl.style.display = 'block';
+    return;
+  }
+
+  // Valida endereço para entrega
+  if (tipoPedido === 'entrega' && !endereco) {
+    alertaEl.textContent = 'Informe o endereço para entrega.';
+    alertaEl.style.display = 'block';
+    document.getElementById('endereco-entrega').focus();
+    return;
+  }
+
+  alertaEl.style.display = 'none';
+  window.open(
+    `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(gerarMensagem())}`,
+    '_blank'
+  );
 });
 
 // ════════════════════════════════════════
