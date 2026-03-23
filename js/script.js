@@ -2,12 +2,12 @@
  * MC'DU SALGADOS – Cardápio Digital
  *
  * ATUALIZAÇÕES NESTA VERSÃO:
- *  1. Tela de resumo: seleção de Retirada ou Entrega
- *     - Entrega exige endereço obrigatório
- *  2. Mensagem WhatsApp reformatada para impressão térmica:
- *     - Sem emojis
- *     - Blocos separados por linha tracejada
- *     - Texto limpo e legível
+ *  1. Limite de sabores proporcional à quantidade selecionada:
+ *     - Assados:    25un→2 | 50un→3 | 75un→4 | 100un→5
+ *     - Fritos:     25un→4 | 50un→5 | 75un→5 | 100un→5
+ *     - Mini Pizzas:25un→4 | 50un→5 | 75un→5 | 100un→5
+ *     - Controlado via data-sabores-por-qtd no HTML
+ *  2. Mensagem WhatsApp inclui nome da empresa e CNPJ
  */
 
 // ════════════════════════════════════════
@@ -15,6 +15,8 @@
 // ════════════════════════════════════════
 
 const WHATSAPP_NUMERO = '5519993985276';
+const EMPRESA_NOME    = "MC'DU SALGADOS";
+const EMPRESA_CNPJ    = '46.437.580/0001-80';
 
 const HORARIOS_FUNC = {
   0: { abre: '09:00', fecha: '18:00' }, // Domingo
@@ -68,7 +70,7 @@ function distribuirSabores(total, sabores) {
 }
 
 function hojeISO() {
-  const d = new Date();
+  const d  = new Date();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}-${mm}-${dd}`;
@@ -82,6 +84,48 @@ function horaParaMin(hhmm) {
 function diaSemanaDeISO(isoStr) {
   const [y, m, d] = isoStr.split('-').map(Number);
   return new Date(y, m - 1, d).getDay();
+}
+
+/**
+ * Converte a string "25:2,50:3,75:4,100:5" num objeto { 25:2, 50:3, 75:4, 100:5 }.
+ */
+function parseSaboresPorQtd(str) {
+  if (!str) return null;
+  const map = {};
+  str.split(',').forEach(par => {
+    const [qtd, max] = par.split(':').map(Number);
+    if (!isNaN(qtd) && !isNaN(max)) map[qtd] = max;
+  });
+  return Object.keys(map).length ? map : null;
+}
+
+/**
+ * Dado um mapa de {quantidade: maxSabores} e uma quantidade escolhida,
+ * retorna quantos sabores são permitidos.
+ *
+ * Regra: usa o limite da menor chave do mapa que seja >= qty.
+ * Se qty for maior que todas as chaves, usa o valor da maior chave.
+ *
+ * Exemplo (mapa assados {25:2, 50:3, 75:4, 100:5}):
+ *   qty=25  → 2
+ *   qty=30  → 3  (próxima chave ≥ 30 é 50)
+ *   qty=75  → 4
+ *   qty=200 → 5  (qty > todas as chaves, usa máximo)
+ */
+function calcularMaxSaboresPorQtd(saboresMap, qty) {
+  if (!saboresMap) return 0; // 0 = sem limite
+
+  const chaves = Object.keys(saboresMap).map(Number).sort((a, b) => a - b);
+
+  // qty maior que todas as chaves → usa o limite da maior chave
+  if (qty >= chaves[chaves.length - 1]) return saboresMap[chaves[chaves.length - 1]];
+
+  // Encontra a menor chave que seja >= qty
+  for (const chave of chaves) {
+    if (qty <= chave) return saboresMap[chave];
+  }
+
+  return saboresMap[chaves[chaves.length - 1]];
 }
 
 // ════════════════════════════════════════
@@ -126,10 +170,10 @@ function onDataChange() {
 
   let minHora = horario.abre;
   if (dataVal === hojeISO()) {
-    const agora      = new Date();
-    const agoraMin   = agora.getHours() * 60 + agora.getMinutes() + 1;
-    const abertMin   = horaParaMin(horario.abre);
-    const efetMin    = Math.max(agoraMin, abertMin);
+    const agora    = new Date();
+    const agoraMin = agora.getHours() * 60 + agora.getMinutes() + 1;
+    const abertMin = horaParaMin(horario.abre);
+    const efetMin  = Math.max(agoraMin, abertMin);
     const hh = String(Math.floor(efetMin / 60)).padStart(2, '0');
     const mm = String(efetMin % 60).padStart(2, '0');
     minHora = `${hh}:${mm}`;
@@ -229,7 +273,7 @@ document.getElementById('btn-entrar').addEventListener('click', () => {
     }
   }
 
-  const [y, m, d]  = dataVal.split('-');
+  const [y, m, d]       = dataVal.split('-');
   const dataFormatada   = `${d}/${m}/${y}`;
   const textoFormatado  = `${DIAS_PT[diaSemana]}, ${dataFormatada} as ${horaVal}`;
 
@@ -271,14 +315,16 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
 
 function renderizarBlocosCento() {
   document.querySelectorAll('.cento-novo').forEach(bloco => {
-    const catId      = bloco.dataset.cat;
-    const titulo     = bloco.dataset.titulo;
-    const precoCento = parseFloat(bloco.dataset.precoCento);
-    const maxSabores = parseInt(bloco.dataset.maxSabores) || 0;
-    const sabores    = bloco.dataset.sabores
+    const catId        = bloco.dataset.cat;
+    const titulo       = bloco.dataset.titulo;
+    const precoCento   = parseFloat(bloco.dataset.precoCento);
+    const maxSabores   = parseInt(bloco.dataset.maxSabores) || 0;
+    // Mapa de limite de sabores por quantidade (ex: "25:2,50:3,75:4,100:5")
+    const saboresPorQtd = parseSaboresPorQtd(bloco.dataset.saboresPorQtd || '');
+    const sabores      = bloco.dataset.sabores
       ? bloco.dataset.sabores.split('|').map(s => s.trim()).filter(Boolean)
       : [];
-    const temSabores = sabores.length > 0;
+    const temSabores   = sabores.length > 0;
 
     const opcoesRapidas = [25, 50, 75, 100];
     const botoesQtd = opcoesRapidas.map(qtd => `
@@ -290,9 +336,7 @@ function renderizarBlocosCento() {
 
     let blocoSabores = '';
     if (temSabores) {
-      const avisoMax = maxSabores > 0
-        ? `<span class="cn-aviso-max">Escolha ate ${maxSabores} sabores</span>`
-        : '';
+      // O aviso de limite será atualizado dinamicamente pelo JS conforme a qty
       const btnsSabores = sabores
         .map(s => `<button class="cn-btn-sabor" data-sabor="${s}">${s}</button>`)
         .join('');
@@ -301,7 +345,7 @@ function renderizarBlocosCento() {
         <hr class="cn-divisor" />
         <div class="cn-sabores-area">
           <p class="cn-step-label">Escolha os sabores:</p>
-          ${avisoMax}
+          <span class="cn-aviso-max" style="display:none"></span>
           <div class="cn-sabores-lista">${btnsSabores}</div>
           <div class="cn-distribuicao">
             <p class="cn-distribuicao-titulo">Distribuicao automatica</p>
@@ -322,7 +366,10 @@ function renderizarBlocosCento() {
       </div>
       ${blocoSabores}`;
 
-    inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores, temSabores);
+    inicializarInteracoesCento(
+      bloco, catId, titulo, precoCento,
+      maxSabores, saboresPorQtd, temSabores
+    );
   });
 }
 
@@ -330,10 +377,14 @@ function renderizarBlocosCento() {
 // INTERAÇÕES DE UM BLOCO DE CENTO
 // ════════════════════════════════════════
 
-function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores, temSabores) {
-
+function inicializarInteracoesCento(
+  bloco, catId, titulo, precoCento,
+  maxSaboresGlobal, saboresPorQtd, temSabores
+) {
   let qtdSelecionada      = 0;
   let saboresSelecionados = [];
+  // Limite ativo (recalculado quando a qty muda)
+  let maxSaboresAtivo     = maxSaboresGlobal;
 
   const btnQtds    = bloco.querySelectorAll('.cn-btn-qtd');
   const inputQtd   = bloco.querySelector('.cn-input-qtd');
@@ -341,7 +392,9 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
   const btnSabores = bloco.querySelectorAll('.cn-btn-sabor');
   const distBox    = bloco.querySelector('.cn-distribuicao');
   const distItens  = bloco.querySelector('.cn-distribuicao-itens');
+  const avisoMax   = bloco.querySelector('.cn-aviso-max');
 
+  // ── Salva no estado global ──
   function salvarEstado() {
     const valido = qtdSelecionada > 0 &&
       (!temSabores || saboresSelecionados.length > 0);
@@ -360,6 +413,18 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     atualizarTotais();
   }
 
+  // ── Atualiza o aviso de limite conforme qty ──
+  function atualizarAvisoMax() {
+    if (!avisoMax) return;
+    if (maxSaboresAtivo > 0) {
+      avisoMax.textContent = `Escolha ate ${maxSaboresAtivo} sabores`;
+      avisoMax.style.display = 'inline-flex';
+    } else {
+      avisoMax.style.display = 'none';
+    }
+  }
+
+  // ── Preview de distribuição ──
   function atualizarDistribuicao() {
     if (!temSabores || !distBox) return;
     if (!saboresSelecionados.length || !qtdSelecionada) {
@@ -377,9 +442,12 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     distBox.style.display = 'block';
   }
 
+  // ── Visual dos botões de sabor (selecionado / bloqueado) ──
   function atualizarBotoesSabor() {
     if (!temSabores) return;
-    const limiteAtingido = maxSabores > 0 && saboresSelecionados.length >= maxSabores;
+    const limiteAtingido = maxSaboresAtivo > 0 &&
+      saboresSelecionados.length >= maxSaboresAtivo;
+
     btnSabores.forEach(btn => {
       const sel = saboresSelecionados.includes(btn.dataset.sabor);
       btn.classList.toggle('selecionado', sel);
@@ -387,25 +455,48 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     });
   }
 
+  /**
+   * Ao mudar a quantidade:
+   *  1. Recalcula o limite de sabores para a nova qty
+   *  2. Remove sabores excedentes (se o novo limite for menor)
+   *  3. Atualiza visuais
+   */
   function aplicarQuantidade(qtd) {
     qtdSelecionada = qtd;
-    atualizarDistribuicao();
+
+    // Recalcula limite de sabores
+    if (saboresPorQtd) {
+      maxSaboresAtivo = calcularMaxSaboresPorQtd(saboresPorQtd, qtd);
+    } else {
+      maxSaboresAtivo = maxSaboresGlobal;
+    }
+
+    // Remove sabores excedentes se necessário
+    if (maxSaboresAtivo > 0 && saboresSelecionados.length > maxSaboresAtivo) {
+      saboresSelecionados = saboresSelecionados.slice(0, maxSaboresAtivo);
+    }
+
+    atualizarAvisoMax();
     atualizarBotoesSabor();
+    atualizarDistribuicao();
     salvarEstado();
   }
 
+  // ── Limpa toda a seleção do bloco ──
   function limparTudo() {
     qtdSelecionada      = 0;
     saboresSelecionados = [];
+    maxSaboresAtivo     = maxSaboresGlobal;
     btnQtds.forEach(b => b.classList.remove('selecionado'));
     btnSabores.forEach(b => b.classList.remove('selecionado', 'bloqueado'));
     inputQtd.value = '';
     inputQtd.classList.remove('ativo');
     if (distBox) distBox.style.display = 'none';
+    if (avisoMax) avisoMax.style.display = 'none';
     salvarEstado();
   }
 
-  // Botões rápidos
+  // ── Botões rápidos ──
   btnQtds.forEach(btn => {
     btn.addEventListener('click', () => {
       const novaQtd = parseInt(btn.dataset.qtd);
@@ -419,7 +510,7 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
     });
   });
 
-  // Campo livre + botão OK
+  // ── Campo livre + botão OK ──
   function aplicarInputQtd() {
     const raw = inputQtd.value.trim();
     const val = parseInt(raw);
@@ -436,23 +527,30 @@ function inicializarInteracoesCento(bloco, catId, titulo, precoCento, maxSabores
   btnAplicar.addEventListener('click', aplicarInputQtd);
   inputQtd.addEventListener('keydown', e => { if (e.key === 'Enter') aplicarInputQtd(); });
 
-  // Clique no sabor
+  // ── Clique no sabor ──
   btnSabores.forEach(btn => {
     btn.addEventListener('click', () => {
       if (qtdSelecionada === 0) {
         mostrarAlerta('Primeiro escolha a quantidade acima (botoes rapidos ou campo livre).');
         return;
       }
+
       const sabor = btn.dataset.sabor;
+
       if (saboresSelecionados.includes(sabor)) {
+        // Desmarcar
         saboresSelecionados = saboresSelecionados.filter(s => s !== sabor);
       } else {
-        if (maxSabores > 0 && saboresSelecionados.length >= maxSabores) {
-          mostrarAlerta(`Maximo de ${maxSabores} sabores para esta categoria! Desmarque um para trocar.`);
+        // Marcar — verifica limite
+        if (maxSaboresAtivo > 0 && saboresSelecionados.length >= maxSaboresAtivo) {
+          mostrarAlerta(
+            `Para ${qtdSelecionada} unidades, o limite e de ${maxSaboresAtivo} sabore${maxSaboresAtivo > 1 ? 's' : ''}.\nDesmarque um para trocar.`
+          );
           return;
         }
         saboresSelecionados.push(sabor);
       }
+
       atualizarBotoesSabor();
       atualizarDistribuicao();
       salvarEstado();
@@ -567,9 +665,9 @@ function construirResumo() {
   document.getElementById('resumo-nome').textContent     = estado.nomeCliente;
   document.getElementById('resumo-retirada').textContent = estado.retirada.textoFormatado;
 
-  // Reseta tipo de pedido e endereço ao abrir o resumo
-  document.getElementById('tipo-pedido').value = '';
-  document.getElementById('endereco-entrega').value = '';
+  // Reseta tipo e endereço ao abrir o resumo
+  document.getElementById('tipo-pedido').value          = '';
+  document.getElementById('endereco-entrega').value     = '';
   document.getElementById('grupo-endereco').style.display = 'none';
   document.getElementById('alerta-resumo').style.display  = 'none';
 
@@ -638,14 +736,18 @@ document.getElementById('btn-voltar-cardapio').addEventListener('click', () => {
 // ════════════════════════════════════════
 // MENSAGEM WHATSAPP
 // Formato limpo para impressão térmica — sem emojis
+// Inclui nome da empresa e CNPJ
 // ════════════════════════════════════════
 
 function gerarMensagem() {
   const tipoPedido = document.getElementById('tipo-pedido').value;
   const endereco   = document.getElementById('endereco-entrega').value.trim();
 
-  let msg = `PEDIDO - MC'DU SALGADOS\n`;
-  msg += `--------------------------------\n`;
+  let msg = `${EMPRESA_NOME}\n`;
+  msg += `CNPJ: ${EMPRESA_CNPJ}\n`;
+  msg += `================================\n`;
+  msg += `NOVO PEDIDO\n`;
+  msg += `================================\n`;
   msg += `Cliente: ${estado.nomeCliente}\n`;
 
   if (tipoPedido === 'retirada') {
@@ -672,18 +774,18 @@ function gerarMensagem() {
       const v = cat.precoUnit * (cat.qtdSelecionada / 100);
       msg += `- ${cat.qtdSelecionada} unidades  ${formatarBRL(v)}\n`;
       if (cat.saboresSelecionados && cat.saboresSelecionados.length) {
-        for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados)) {
+        for (const d of distribuirSabores(cat.qtdSelecionada, cat.saboresSelecionados))
           msg += `  > ${d.sabor}: ${d.qtd} un.\n`;
-        }
       }
     }
     msg += '\n';
   }
 
-  msg += `--------------------------------\n`;
+  msg += `================================\n`;
   msg += `TOTAL: ${formatarBRL(calcularTotal())}\n`;
-  msg += `--------------------------------\n`;
-  msg += `Pedido via cardapio digital MC'DU SALGADOS`;
+  msg += `================================\n`;
+  msg += `Pedido via cardapio digital\n`;
+  msg += `${EMPRESA_NOME}`;
 
   return msg;
 }
