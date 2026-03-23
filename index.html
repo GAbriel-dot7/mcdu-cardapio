@@ -112,50 +112,74 @@
         </div>
       </section>
 
-      <!-- MINI PASTÉIS -->
+      <!-- MINI PASTÉIS (sem limite de sabores) -->
       <section class="categoria" id="mini-pasteis">
         <div class="cat-header">
           <h2>Mini Pastéis</h2>
           <span class="cat-preco-tag">R$ 85,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="mini-pasteis" data-titulo="Mini Pastéis"
-             data-preco-cento="85" data-max-sabores="0"
+        <div class="cento-novo"
+             data-cat="mini-pasteis"
+             data-titulo="Mini Pastéis"
+             data-preco-cento="85"
+             data-max-sabores="0"
              data-sabores="Carne|Queijo|Frango|Presunto e Queijo">
         </div>
       </section>
 
-      <!-- MINI SALGADOS FRITOS -->
+      <!-- MINI SALGADOS FRITOS
+           Limite proporcional à quantidade:
+           25un → 4 sabores | 50un → 5 | 75un → 5 | 100un → 5
+      -->
       <section class="categoria" id="mini-fritos">
         <div class="cat-header">
           <h2>Mini Salgados Fritos</h2>
           <span class="cat-preco-tag">R$ 85,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="mini-fritos" data-titulo="Mini Salgados Fritos"
-             data-preco-cento="85" data-max-sabores="0"
+        <div class="cento-novo"
+             data-cat="mini-fritos"
+             data-titulo="Mini Salgados Fritos"
+             data-preco-cento="85"
+             data-max-sabores="5"
+             data-sabores-por-qtd="25:4,50:5,75:5,100:5"
              data-sabores="Coxinha|Risoles|Bolinha de Queijo|Presunto e Queijo|Salsicha">
         </div>
       </section>
 
-      <!-- SALGADOS ASSADOS -->
+      <!-- SALGADOS ASSADOS
+           Limite proporcional à quantidade:
+           25un → 2 sabores | 50un → 3 | 75un → 4 | 100un → 5
+      -->
       <section class="categoria" id="salgados-assados">
         <div class="cat-header">
           <h2>Salgados Assados</h2>
           <span class="cat-preco-tag">R$ 100,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="salgados-assados" data-titulo="Salgados Assados"
-             data-preco-cento="100" data-max-sabores="5"
+        <div class="cento-novo"
+             data-cat="salgados-assados"
+             data-titulo="Salgados Assados"
+             data-preco-cento="100"
+             data-max-sabores="5"
+             data-sabores-por-qtd="25:2,50:3,75:4,100:5"
              data-sabores="Calabresa|Frango|Presunto e Queijo|Hot Dog|Esfiha de Carne|Milho com Queijo|Brócolis|Palmito">
         </div>
       </section>
 
-      <!-- MINI PIZZAS -->
+      <!-- MINI PIZZAS
+           Limite proporcional à quantidade:
+           25un → 4 sabores | 50un → 5 | 75un → 5 | 100un → 5
+      -->
       <section class="categoria" id="mini-pizzas">
         <div class="cat-header">
           <h2>Mini Pizzas</h2>
           <span class="cat-preco-tag">R$ 90,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="mini-pizzas" data-titulo="Mini Pizzas"
-             data-preco-cento="90" data-max-sabores="5"
+        <div class="cento-novo"
+             data-cat="mini-pizzas"
+             data-titulo="Mini Pizzas"
+             data-preco-cento="90"
+             data-max-sabores="5"
+             data-sabores-por-qtd="25:4,50:5,75:5,100:5"
              data-sabores="Calabresa|Frango c/ Catupiry|Presunto e Queijo|Quatro Queijos|Milho com Queijo|Brócolis e Palmito">
         </div>
       </section>
@@ -166,8 +190,12 @@
           <h2>Mini Hamburguinho Assado</h2>
           <span class="cat-preco-tag">R$ 140,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="mini-hamburguer" data-titulo="Mini Hamburguinho Assado"
-             data-preco-cento="140" data-max-sabores="0" data-sabores="">
+        <div class="cento-novo"
+             data-cat="mini-hamburguer"
+             data-titulo="Mini Hamburguinho Assado"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
         </div>
       </section>
 
@@ -211,8 +239,12 @@
           <h2>Kibe</h2>
           <span class="cat-preco-tag">R$ 140,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="kibe" data-titulo="Kibe"
-             data-preco-cento="140" data-max-sabores="0" data-sabores="">
+        <div class="cento-novo"
+             data-cat="kibe"
+             data-titulo="Kibe"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
         </div>
       </section>
 
@@ -222,8 +254,12 @@
           <h2>Mini Empada</h2>
           <span class="cat-preco-tag">R$ 140,00 / cento</span>
         </div>
-        <div class="cento-novo" data-cat="mini-empada" data-titulo="Mini Empada"
-             data-preco-cento="140" data-max-sabores="0" data-sabores="">
+        <div class="cento-novo"
+             data-cat="mini-empada"
+             data-titulo="Mini Empada"
+             data-preco-cento="140"
+             data-max-sabores="0"
+             data-sabores="">
         </div>
       </section>
 
@@ -252,8 +288,12 @@
             <span class="doce-nome">Brigadeiro / Beijinho</span>
             <span class="doce-preco-ref">R$ 90,00 / cento</span>
           </div>
-          <div class="cento-novo" data-cat="doces-brigadeiro" data-titulo="Brigadeiro / Beijinho"
-               data-preco-cento="90" data-max-sabores="0" data-sabores="">
+          <div class="cento-novo"
+               data-cat="doces-brigadeiro"
+               data-titulo="Brigadeiro / Beijinho"
+               data-preco-cento="90"
+               data-max-sabores="0"
+               data-sabores="">
           </div>
         </div>
 
@@ -262,8 +302,12 @@
             <span class="doce-nome">Churros</span>
             <span class="doce-preco-ref">R$ 90,00 / cento</span>
           </div>
-          <div class="cento-novo" data-cat="doces-churros" data-titulo="Churros"
-               data-preco-cento="90" data-max-sabores="0" data-sabores="">
+          <div class="cento-novo"
+               data-cat="doces-churros"
+               data-titulo="Churros"
+               data-preco-cento="90"
+               data-max-sabores="0"
+               data-sabores="">
           </div>
         </div>
 
@@ -272,8 +316,12 @@
             <span class="doce-nome">Palito de Churros</span>
             <span class="doce-preco-ref">R$ 65,00 / cento</span>
           </div>
-          <div class="cento-novo" data-cat="doces-palito" data-titulo="Palito de Churros"
-               data-preco-cento="65" data-max-sabores="0" data-sabores="">
+          <div class="cento-novo"
+               data-cat="doces-palito"
+               data-titulo="Palito de Churros"
+               data-preco-cento="65"
+               data-max-sabores="0"
+               data-sabores="">
           </div>
         </div>
 
@@ -310,22 +358,19 @@
     </header>
     <div class="resumo-conteudo">
 
-      <!-- Dados do cliente -->
       <div class="resumo-info-cliente">
         <p><strong>Cliente:</strong> <span id="resumo-nome"></span></p>
         <p><strong>Horário:</strong> <span id="resumo-retirada"></span></p>
       </div>
 
-      <!-- Lista de itens do pedido -->
       <div id="resumo-lista"></div>
 
-      <!-- Total -->
       <div class="resumo-total-bloco">
         <span>TOTAL DO PEDIDO</span>
         <strong id="resumo-total">R$ 0,00</strong>
       </div>
 
-      <!-- ── TIPO DE PEDIDO ── -->
+      <!-- Tipo de pedido -->
       <div class="campo-grupo">
         <label for="tipo-pedido">Tipo de pedido</label>
         <select id="tipo-pedido" class="form-select">
@@ -335,7 +380,7 @@
         </select>
       </div>
 
-      <!-- ── ENDEREÇO – só aparece quando Entrega ── -->
+      <!-- Endereço – só aparece quando Entrega -->
       <div class="campo-grupo" id="grupo-endereco" style="display:none">
         <label for="endereco-entrega">Endereço para entrega</label>
         <input
