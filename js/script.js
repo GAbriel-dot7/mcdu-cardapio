@@ -661,8 +661,9 @@ function initItensUnitarios() {
       const cat = estado.pedido[catId];
       const idx = cat.itens.findIndex(i => i.sabor === sabor);
       if (qtd <= 0) { if (idx >= 0) cat.itens.splice(idx, 1); }
+      // Armazena o preço individual do item para suportar categorias com preços variados (ex: Bebidas)
       else if (idx >= 0) cat.itens[idx].qtd = qtd;
-      else cat.itens.push({ sabor, qtd });
+      else cat.itens.push({ sabor, qtd, preco });
       if (cat.itens.length === 0) delete estado.pedido[catId];
     }
 
@@ -687,7 +688,9 @@ function calcularTotal() {
   let total = 0;
   for (const cat of Object.values(estado.pedido)) {
     if (cat.tipo === 'unitario')
-      total += cat.itens.reduce((s, i) => s + cat.precoUnit * i.qtd, 0);
+      // Usa o preço individual do item quando disponível (ex: bebidas com preços variados)
+      // Caso contrário usa o precoUnit da categoria (retrocompatível)
+      total += cat.itens.reduce((s, i) => s + (i.preco !== undefined ? i.preco : cat.precoUnit) * i.qtd, 0);
     else
       total += cat.precoUnit * (cat.qtdSelecionada / 100);
   }
@@ -762,7 +765,8 @@ function construirResumo() {
 
     if (cat.tipo === 'unitario') {
       for (const item of cat.itens) {
-        const v = cat.precoUnit * item.qtd;
+        const precoItem = item.preco !== undefined ? item.preco : cat.precoUnit;
+        const v = precoItem * item.qtd;
         totalGeral += v;
         html += `
           <div class="resumo-item">
@@ -867,7 +871,8 @@ function gerarMensagem() {
 
     if (cat.tipo === 'unitario') {
       for (const item of cat.itens) {
-        const v = cat.precoUnit * item.qtd;
+        const precoItem = item.preco !== undefined ? item.preco : cat.precoUnit;
+        const v = precoItem * item.qtd;
         msg += `- ${item.sabor}: ${item.qtd}x  ${formatarBRL(v)}\n`;
       }
     } else {
