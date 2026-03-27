@@ -544,3 +544,111 @@ button:focus-visible, input:focus-visible {
 }
 #endereco-entrega:focus { border-color: var(--vermelho-vivo); }
 #endereco-entrega::placeholder { color: #444; }
+
+/* Indicador de limite de sabores dentro do botao de quantidade */
+.cn-qtd-sabores {
+  font-size: 10px; font-weight: 700;
+  color: var(--amarelo); text-transform: uppercase;
+  letter-spacing: 0.4px; margin-top: 1px;
+}
+
+/* ════════════════════════════════
+   SEÇÃO DE PAGAMENTO
+════════════════════════════════ */
+
+/* Cards de forma de pagamento */
+.pgto-opcoes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.pgto-btn {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; padding: 16px 8px;
+  background: var(--preto-item);
+  border: 2px solid #333; border-radius: var(--radius);
+  color: var(--cinza-txt);
+  font-family: var(--font-corpo);
+  cursor: pointer; transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.pgto-btn:active { transform: scale(0.97); }
+
+.pgto-btn.selecionado {
+  border-color: var(--amarelo);
+  background: rgba(245,166,35,0.10);
+  color: var(--branco);
+}
+
+.pgto-icone {
+  font-size: 22px; line-height: 1;
+  color: var(--cinza-txt);
+  transition: color 0.18s;
+}
+.pgto-btn.selecionado .pgto-icone { color: var(--amarelo); }
+
+.pgto-nome {
+  font-size: 13px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* Troco – sim/não */
+.troco-opcoes {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.troco-btn {
+  padding: 13px 10px;
+  background: var(--preto-item);
+  border: 2px solid #333; border-radius: var(--radius);
+  color: var(--cinza-txt);
+  font-family: var(--font-corpo); font-size: 13px; font-weight: 700;
+  text-align: center; line-height: 1.4;
+  cursor: pointer; transition: all 0.18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.troco-btn:active { transform: scale(0.97); }
+.troco-btn.selecionado {
+  border-color: var(--verde-wpp);
+  background: rgba(37,211,102,0.10);
+  color: var(--branco);
+}
+.troco-btn[data-troco="nao"].selecionado {
+  border-color: var(--cinza-txt);
+  background: rgba(176,169,154,0.10);
+}
+
+/* Campo de valor do troco */
+.troco-valor-row {
+  display: flex; align-items: center;
+  border: 2px solid #2a2a2a; border-radius: var(--radius);
+  background: var(--preto-card);
+  overflow: hidden; transition: border-color 0.2s;
+}
+.troco-valor-row:focus-within { border-color: var(--vermelho-vivo); }
+
+.troco-rs {
+  padding: 0 14px;
+  font-size: 16px; font-weight: 800; color: var(--amarelo);
+  background: rgba(245,166,35,0.08);
+  border-right: 2px solid #2a2a2a;
+  height: 100%; display: flex; align-items: center;
+  white-space: nowrap;
+}
+
+#valor-troco {
+  flex: 1; padding: 13px 14px;
+  background: transparent;
+  border: none;
+  color: var(--branco);
+  font-family: var(--font-corpo); font-size: 18px; font-weight: 700;
+  outline: none;
+  -moz-appearance: textfield;
+  color-scheme: dark;
+}
+#valor-troco::-webkit-outer-spin-button,
+#valor-troco::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#valor-troco::placeholder { color: #444; }
