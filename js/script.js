@@ -288,12 +288,90 @@ document.getElementById('nome-cliente').addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════
-// TIPO DE PEDIDO – mostrar/ocultar endereço
+// TIPO DE PEDIDO – mostrar/ocultar endereço e pagamento
 // ════════════════════════════════════════
 
 document.getElementById('tipo-pedido').addEventListener('change', function () {
-  document.getElementById('grupo-endereco').style.display =
-    this.value === 'entrega' ? 'block' : 'none';
+  const isEntrega = this.value === 'entrega';
+  document.getElementById('grupo-endereco').style.display  = isEntrega ? 'block' : 'none';
+  document.getElementById('grupo-pagamento').style.display = isEntrega ? 'block' : 'none';
+
+  // Reseta pagamento ao trocar tipo
+  if (!isEntrega) resetarPagamento();
+});
+
+// ════════════════════════════════════════
+// PAGAMENTO – lógica de seleção
+// ════════════════════════════════════════
+
+/** Reseta toda a seção de pagamento para o estado inicial */
+function resetarPagamento() {
+  document.querySelectorAll('.pgto-btn').forEach(b => b.classList.remove('selecionado'));
+  document.getElementById('grupo-troco').style.display       = 'none';
+  document.getElementById('grupo-valor-troco').style.display = 'none';
+  document.querySelectorAll('.troco-btn').forEach(b => b.classList.remove('selecionado'));
+  document.getElementById('valor-troco').value  = '';
+  document.getElementById('hint-troco').textContent = '';
+  document.getElementById('hint-troco').className  = 'campo-hint';
+}
+
+// Seleção da forma de pagamento
+document.querySelectorAll('.pgto-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pgto-btn').forEach(b => b.classList.remove('selecionado'));
+    btn.classList.add('selecionado');
+
+    const isDinheiro = btn.dataset.pgto === 'dinheiro';
+    document.getElementById('grupo-troco').style.display = isDinheiro ? 'block' : 'none';
+
+    // Reseta troco se trocou para outra forma
+    if (!isDinheiro) {
+      document.getElementById('grupo-valor-troco').style.display = 'none';
+      document.querySelectorAll('.troco-btn').forEach(b => b.classList.remove('selecionado'));
+      document.getElementById('valor-troco').value = '';
+      document.getElementById('hint-troco').textContent = '';
+    }
+  });
+});
+
+// Seleção de troco (Sim / Não)
+document.querySelectorAll('.troco-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.troco-btn').forEach(b => b.classList.remove('selecionado'));
+    btn.classList.add('selecionado');
+
+    const precisaTroco = btn.dataset.troco === 'sim';
+    document.getElementById('grupo-valor-troco').style.display = precisaTroco ? 'block' : 'none';
+
+    if (!precisaTroco) {
+      document.getElementById('valor-troco').value = '';
+      document.getElementById('hint-troco').textContent = '';
+      document.getElementById('hint-troco').className = 'campo-hint';
+    }
+  });
+});
+
+// Validação em tempo real do valor de troco
+document.getElementById('valor-troco').addEventListener('input', function () {
+  const hintEl   = document.getElementById('hint-troco');
+  const totalEl  = document.getElementById('resumo-total');
+  const totalStr = totalEl.textContent.replace(/[^\d,]/g, '').replace(',', '.');
+  const total    = parseFloat(totalStr) || 0;
+  const troco    = parseFloat(this.value) || 0;
+
+  if (troco <= 0) {
+    hintEl.textContent = '';
+    hintEl.className   = 'campo-hint';
+    return;
+  }
+  if (troco < total) {
+    hintEl.textContent = `⚠ Valor menor que o total do pedido (${document.getElementById('resumo-total').textContent}).`;
+    hintEl.className   = 'campo-hint erro';
+  } else {
+    const diff = troco - total;
+    hintEl.textContent = `✔ Troco: R$ ${diff.toFixed(2).replace('.', ',')}`;
+    hintEl.className   = 'campo-hint ok';
+  }
 });
 
 // ════════════════════════════════════════
@@ -665,11 +743,13 @@ function construirResumo() {
   document.getElementById('resumo-nome').textContent     = estado.nomeCliente;
   document.getElementById('resumo-retirada').textContent = estado.retirada.textoFormatado;
 
-  // Reseta tipo e endereço ao abrir o resumo
+  // Reseta tipo, endereço e pagamento ao abrir o resumo
   document.getElementById('tipo-pedido').value          = '';
   document.getElementById('endereco-entrega').value     = '';
-  document.getElementById('grupo-endereco').style.display = 'none';
-  document.getElementById('alerta-resumo').style.display  = 'none';
+  document.getElementById('grupo-endereco').style.display  = 'none';
+  document.getElementById('grupo-pagamento').style.display = 'none';
+  document.getElementById('alerta-resumo').style.display   = 'none';
+  resetarPagamento();
 
   const lista = document.getElementById('resumo-lista');
   lista.innerHTML = '';
@@ -740,8 +820,13 @@ document.getElementById('btn-voltar-cardapio').addEventListener('click', () => {
 // ════════════════════════════════════════
 
 function gerarMensagem() {
-  const tipoPedido = document.getElementById('tipo-pedido').value;
-  const endereco   = document.getElementById('endereco-entrega').value.trim();
+  const tipoPedido  = document.getElementById('tipo-pedido').value;
+  const endereco    = document.getElementById('endereco-entrega').value.trim();
+  const pgtoSel     = document.querySelector('.pgto-btn.selecionado');
+  const formaPgto   = pgtoSel ? pgtoSel.dataset.pgto : '';
+  const trocoSel    = document.querySelector('.troco-btn.selecionado');
+  const precisaTroco= trocoSel ? trocoSel.dataset.troco === 'sim' : false;
+  const valorTroco  = parseFloat(document.getElementById('valor-troco').value) || 0;
 
   let msg = `${EMPRESA_NOME}\n`;
   msg += `CNPJ: ${EMPRESA_CNPJ}\n`;
@@ -757,6 +842,21 @@ function gerarMensagem() {
     msg += `Tipo: ENTREGA\n`;
     msg += `Endereco: ${endereco}\n`;
     msg += `Horario: ${estado.retirada.textoFormatado}\n`;
+
+    // Pagamento
+    const nomesPgto = { pix: 'PIX', cartao: 'CARTAO', dinheiro: 'DINHEIRO' };
+    msg += `Pagamento: ${nomesPgto[formaPgto] || formaPgto.toUpperCase()}\n`;
+
+    if (formaPgto === 'dinheiro') {
+      if (precisaTroco && valorTroco > 0) {
+        const totalPed = calcularTotal();
+        const diffTroco = valorTroco - totalPed;
+        msg += `Troco para: R$ ${valorTroco.toFixed(2).replace('.', ',')}\n`;
+        msg += `Troco a devolver: R$ ${diffTroco.toFixed(2).replace('.', ',')}\n`;
+      } else {
+        msg += `Troco: Nao precisa\n`;
+      }
+    }
   }
 
   msg += `--------------------------------\n\n`;
@@ -814,12 +914,48 @@ document.getElementById('btn-whatsapp').addEventListener('click', () => {
     return;
   }
 
-  // Valida endereço para entrega
-  if (tipoPedido === 'entrega' && !endereco) {
-    alertaEl.textContent = 'Informe o endereço para entrega.';
-    alertaEl.style.display = 'block';
-    document.getElementById('endereco-entrega').focus();
-    return;
+  if (tipoPedido === 'entrega') {
+    // Valida endereço
+    if (!endereco) {
+      alertaEl.textContent = 'Informe o endereco para entrega.';
+      alertaEl.style.display = 'block';
+      document.getElementById('endereco-entrega').focus();
+      return;
+    }
+
+    // Valida forma de pagamento
+    const pgtoSel = document.querySelector('.pgto-btn.selecionado');
+    if (!pgtoSel) {
+      alertaEl.textContent = 'Selecione a forma de pagamento.';
+      alertaEl.style.display = 'block';
+      document.getElementById('grupo-pagamento').scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
+    // Valida troco quando dinheiro
+    if (pgtoSel.dataset.pgto === 'dinheiro') {
+      const trocoSel = document.querySelector('.troco-btn.selecionado');
+      if (!trocoSel) {
+        alertaEl.textContent = 'Informe se vai precisar de troco.';
+        alertaEl.style.display = 'block';
+        return;
+      }
+      if (trocoSel.dataset.troco === 'sim') {
+        const valorTroco = parseFloat(document.getElementById('valor-troco').value) || 0;
+        if (valorTroco <= 0) {
+          alertaEl.textContent = 'Informe o valor para o troco.';
+          alertaEl.style.display = 'block';
+          document.getElementById('valor-troco').focus();
+          return;
+        }
+        if (valorTroco < calcularTotal()) {
+          alertaEl.textContent = 'O valor do troco nao pode ser menor que o total do pedido.';
+          alertaEl.style.display = 'block';
+          document.getElementById('valor-troco').focus();
+          return;
+        }
+      }
+    }
   }
 
   alertaEl.style.display = 'none';
