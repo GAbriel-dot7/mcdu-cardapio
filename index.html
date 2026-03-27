@@ -392,6 +392,60 @@
         />
       </div>
 
+      <!-- ── PAGAMENTO – só aparece quando Entrega ── -->
+      <div id="grupo-pagamento" style="display:none">
+
+        <div class="campo-grupo">
+          <label>Forma de pagamento</label>
+          <div class="pgto-opcoes">
+
+            <button class="pgto-btn" data-pgto="pix">
+              <span class="pgto-icone">◈</span>
+              <span class="pgto-nome">Pix</span>
+            </button>
+
+            <button class="pgto-btn" data-pgto="cartao">
+              <span class="pgto-icone">▣</span>
+              <span class="pgto-nome">Cartão</span>
+            </button>
+
+            <button class="pgto-btn" data-pgto="dinheiro">
+              <span class="pgto-icone">$</span>
+              <span class="pgto-nome">Dinheiro</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Troco – só aparece quando Dinheiro -->
+        <div id="grupo-troco" style="display:none">
+          <div class="campo-grupo">
+            <label>Vai precisar de troco?</label>
+            <div class="troco-opcoes">
+              <button class="troco-btn" data-troco="nao">Não preciso de troco</button>
+              <button class="troco-btn" data-troco="sim">Sim, preciso de troco</button>
+            </div>
+          </div>
+
+          <!-- Valor do troco – só aparece quando Sim -->
+          <div class="campo-grupo" id="grupo-valor-troco" style="display:none">
+            <label for="valor-troco">Troco para quanto?</label>
+            <div class="troco-valor-row">
+              <span class="troco-rs">R$</span>
+              <input
+                type="number"
+                id="valor-troco"
+                placeholder="Ex: 100"
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <span class="campo-hint" id="hint-troco"></span>
+          </div>
+        </div>
+
+      </div><!-- /grupo-pagamento -->
+
       <div id="alerta-resumo" class="alerta" style="display:none"></div>
 
       <button class="btn-whatsapp" id="btn-whatsapp">
