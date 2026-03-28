@@ -113,7 +113,7 @@
         </div>
       </section>
 
-      <!-- MINI PASTÉIS -->
+      <!-- MINI PASTÉIS (sem limite de sabores) -->
       <section class="categoria" id="mini-pasteis">
         <div class="cat-header">
           <h2>Mini Pastéis</h2>
@@ -128,7 +128,10 @@
         </div>
       </section>
 
-      <!-- MINI SALGADOS FRITOS -->
+      <!-- MINI SALGADOS FRITOS
+           Limite proporcional à quantidade:
+           25un → 4 sabores | 50un → 5 | 75un → 5 | 100un → 5
+      -->
       <section class="categoria" id="mini-fritos">
         <div class="cat-header">
           <h2>Mini Salgados Fritos</h2>
@@ -144,7 +147,10 @@
         </div>
       </section>
 
-      <!-- SALGADOS ASSADOS -->
+      <!-- SALGADOS ASSADOS
+           Limite proporcional à quantidade:
+           25un → 2 sabores | 50un → 3 | 75un → 4 | 100un → 5
+      -->
       <section class="categoria" id="salgados-assados">
         <div class="cat-header">
           <h2>Salgados Assados</h2>
@@ -160,7 +166,10 @@
         </div>
       </section>
 
-      <!-- MINI PIZZAS -->
+      <!-- MINI PIZZAS
+           Limite proporcional à quantidade:
+           25un → 4 sabores | 50un → 5 | 75un → 5 | 100un → 5
+      -->
       <section class="categoria" id="mini-pizzas">
         <div class="cat-header">
           <h2>Mini Pizzas</h2>
@@ -330,7 +339,9 @@
         </div>
       </section>
 
-      <!-- BEBIDAS -->
+      <!-- ════════════════════════════════
+           BEBIDAS – todos unitários com preço individual
+      ════════════════════════════════ -->
       <section class="categoria" id="bebidas">
         <div class="cat-header">
           <h2>Bebidas</h2>
@@ -391,20 +402,21 @@
               <div class="item-nome-bloco"><span class="item-nome">Suco Tampico Laranja 2L</span><span class="item-preco-label">R$ 15,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Uva e Maçã 390ml" data-preco="5">
-              <div class="item-nome-bloco"><span class="item-nome">Uva e Maçã 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
+            <!-- ⚠️ PREÇO NÃO INFORMADO: troque o data-preco="0" e o texto "R$ ?,??" abaixo -->
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Uva e Maçã 390ml" data-preco="0">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Uva e Maçã 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Frutas Cítricas 390ml" data-preco="5">
-              <div class="item-nome-bloco"><span class="item-nome">Frutas Cítricas 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Frutas Cítricas 390ml" data-preco="0">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Frutas Cítricas 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Acerola e Laranja 390ml" data-preco="5">
-              <div class="item-nome-bloco"><span class="item-nome">Acerola e Laranja 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Acerola e Laranja 390ml" data-preco="0">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Acerola e Laranja 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Limonada Suíça 390ml" data-preco="5">
-              <div class="item-nome-bloco"><span class="item-nome">Limonada Suíça 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Limonada Suíça 390ml" data-preco="0">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Limonada Suíça 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
           </div>
@@ -482,6 +494,19 @@
         <p><strong>Horário:</strong> <span id="resumo-retirada"></span></p>
       </div>
 
+      <!-- Telefone do cliente -->
+      <div class="campo-grupo">
+        <label for="telefone-cliente">Seu telefone</label>
+        <input
+          type="tel"
+          id="telefone-cliente"
+          placeholder="(19) 99999-9999"
+          maxlength="15"
+          autocomplete="tel"
+          inputmode="numeric"
+        />
+      </div>
+
       <div id="resumo-lista"></div>
 
       <div class="resumo-total-bloco">
@@ -511,7 +536,7 @@
         />
       </div>
 
-      <!-- PAGAMENTO – só aparece quando Entrega -->
+      <!-- ── PAGAMENTO – só aparece quando Entrega ── -->
       <div id="grupo-pagamento" style="display:none">
 
         <div class="campo-grupo">
@@ -546,6 +571,7 @@
             </div>
           </div>
 
+          <!-- Valor do troco – só aparece quando Sim -->
           <div class="campo-grupo" id="grupo-valor-troco" style="display:none">
             <label for="valor-troco">Troco para quanto?</label>
             <div class="troco-valor-row">
