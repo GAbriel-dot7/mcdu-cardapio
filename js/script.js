@@ -278,7 +278,13 @@ document.getElementById('btn-entrar').addEventListener('click', () => {
   const textoFormatado  = `${DIAS_PT[diaSemana]}, ${dataFormatada} as ${horaVal}`;
 
   estado.nomeCliente = nome;
-  estado.retirada    = { dataStr: dataVal, horaStr: horaVal, textoFormatado };
+  estado.retirada    = {
+    dataStr:        dataVal,
+    horaStr:        horaVal,
+    textoFormatado,
+    dataFormatada:  `${DIAS_PT[diaSemana]}, ${dataFormatada}`,
+    horaFormatada:  horaVal,
+  };
 
   mostrarTela('tela-cardapio');
 });
@@ -288,8 +294,27 @@ document.getElementById('nome-cliente').addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════
-// TIPO DE PEDIDO – mostrar/ocultar endereço e pagamento
+// MÁSCARA DE TELEFONE
+// Formata automaticamente: (XX) XXXXX-XXXX
 // ════════════════════════════════════════
+
+document.getElementById('telefone-cliente').addEventListener('input', function () {
+  // Remove tudo que não for dígito
+  let v = this.value.replace(/\D/g, '').slice(0, 11);
+
+  if (v.length === 0) { this.value = ''; return; }
+
+  // Aplica a máscara progressivamente
+  if (v.length <= 2) {
+    this.value = `(${v}`;
+  } else if (v.length <= 7) {
+    this.value = `(${v.slice(0,2)}) ${v.slice(2)}`;
+  } else if (v.length <= 11) {
+    // Celular: (XX) XXXXX-XXXX  ou  fixo: (XX) XXXX-XXXX
+    const corte = v.length === 11 ? 7 : 6;
+    this.value = `(${v.slice(0,2)}) ${v.slice(2, corte)}-${v.slice(corte)}`;
+  }
+});
 
 document.getElementById('tipo-pedido').addEventListener('change', function () {
   const isEntrega = this.value === 'entrega';
@@ -299,6 +324,36 @@ document.getElementById('tipo-pedido').addEventListener('change', function () {
   // Reseta pagamento ao trocar tipo
   if (!isEntrega) resetarPagamento();
 });
+
+// ════════════════════════════════════════
+// QUEBRA DE LINHA PARA IMPRESSÃO TÉRMICA
+// Máx 32 chars por linha — evita corte no endereço
+// ════════════════════════════════════════
+
+/**
+ * Quebra texto longo em múltiplas linhas para impressoras térmicas.
+ * @param {string} chave   - Label completo com ": " (ex: "Endereco: ")
+ * @param {string} valor   - Texto que pode ser longo
+ * @param {number} largura - Máx caracteres por linha (padrão 32)
+ */
+function quebrarLinha(chave, valor, largura = 32) {
+  const recuo   = ' '.repeat(chave.length);
+  const palavras = valor.split(' ');
+  const linhas  = [];
+  let atual     = chave;
+
+  for (const palavra of palavras) {
+    const separador = atual === chave ? '' : ' ';
+    if ((atual + separador + palavra).length <= largura) {
+      atual += separador + palavra;
+    } else {
+      linhas.push(atual);
+      atual = recuo + palavra;
+    }
+  }
+  linhas.push(atual);
+  return linhas.join('\n');
+}
 
 // ════════════════════════════════════════
 // PAGAMENTO – lógica de seleção
@@ -746,9 +801,10 @@ function construirResumo() {
   document.getElementById('resumo-nome').textContent     = estado.nomeCliente;
   document.getElementById('resumo-retirada').textContent = estado.retirada.textoFormatado;
 
-  // Reseta tipo, endereço e pagamento ao abrir o resumo
+  // Reseta tipo, endereço, pagamento e telefone ao abrir o resumo
   document.getElementById('tipo-pedido').value          = '';
   document.getElementById('endereco-entrega').value     = '';
+  document.getElementById('telefone-cliente').value     = '';
   document.getElementById('grupo-endereco').style.display  = 'none';
   document.getElementById('grupo-pagamento').style.display = 'none';
   document.getElementById('alerta-resumo').style.display   = 'none';
@@ -832,20 +888,24 @@ function gerarMensagem() {
   const precisaTroco= trocoSel ? trocoSel.dataset.troco === 'sim' : false;
   const valorTroco  = parseFloat(document.getElementById('valor-troco').value) || 0;
 
+  const telefone    = document.getElementById('telefone-cliente').value.trim();
+
   let msg = `${EMPRESA_NOME}\n`;
   msg += `CNPJ: ${EMPRESA_CNPJ}\n`;
   msg += `================================\n`;
   msg += `NOVO PEDIDO\n`;
+  msg += `Data: ${estado.retirada.dataFormatada}\n`;
   msg += `================================\n`;
   msg += `Cliente: ${estado.nomeCliente}\n`;
+  msg += `Telefone: ${telefone}\n`;
 
   if (tipoPedido === 'retirada') {
     msg += `Tipo: RETIRADA\n`;
-    msg += `Horario: ${estado.retirada.textoFormatado}\n`;
+    msg += `Horario: ${estado.retirada.horaFormatada}\n`;
   } else {
     msg += `Tipo: ENTREGA\n`;
-    msg += `Endereco: ${endereco}\n`;
-    msg += `Horario: ${estado.retirada.textoFormatado}\n`;
+    msg += quebrarLinha('Endereco: ', endereco) + '\n';
+    msg += `Horario: ${estado.retirada.horaFormatada}\n`;
 
     // Pagamento
     const nomesPgto = { pix: 'PIX', cartao: 'CARTAO', dinheiro: 'DINHEIRO' };
@@ -909,6 +969,15 @@ document.getElementById('btn-whatsapp').addEventListener('click', () => {
   if (erroPedido) {
     alertaEl.textContent = erroPedido;
     alertaEl.style.display = 'block';
+    return;
+  }
+
+  // Valida telefone
+  const telefone = document.getElementById('telefone-cliente').value.trim();
+  if (!telefone || telefone.replace(/\D/g, '').length < 10) {
+    alertaEl.textContent = 'Informe seu telefone para contato.';
+    alertaEl.style.display = 'block';
+    document.getElementById('telefone-cliente').focus();
     return;
   }
 
