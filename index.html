@@ -4,21 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MC'DU Salgados – Cardápio Digital</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260525" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <!-- error-capture removed -->
 </head>
 <body>
 
   <!-- TELA 1 – IDENTIFICAÇÃO DO CLIENTE -->
   <div id="tela-entrada" class="tela ativa">
     <div class="entrada-wrapper">
+      <div class="entrada-brand-tag">Cardápio digital oficial</div>
       <div class="logo-marca">
         <span class="logo-mc">MC'DU</span>
         <span class="logo-sub">SALGADOS</span>
       </div>
+      <p class="entrada-mark">Artesanais, feitos sob encomenda e preparados para retirada com praticidade.</p>
       <p class="entrada-slogan">Monte seu pedido e envie pelo WhatsApp!</p>
+
+      <div class="entrada-trustbar" aria-label="Informações principais">
+        <div class="trust-item">
+          <span class="trust-icon">◌</span>
+          <span class="trust-label">Retirada</span>
+          <strong class="trust-value">Agende com facilidade</strong>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">◌</span>
+          <span class="trust-label">Atendimento</span>
+          <strong class="trust-value">Domingo sujeito a confirmação</strong>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">◌</span>
+          <span class="trust-label">Pedido</span>
+          <strong class="trust-value">Finalização via WhatsApp</strong>
+        </div>
+      </div>
 
       <div class="campo-grupo">
         <label for="nome-cliente">Seu nome</label>
@@ -46,9 +67,13 @@
           <span>Sábado</span><span>14h – 22h</span>
           <span>Domingo</span><span>09h – 18h</span>
         </div>
+        <p class="horarios-ref-nota">Atendimento aos domingos sujeito a confirmação. Verifique conosco se a data escolhida estará em funcionamento.</p>
       </div>
 
-      <button class="btn-primario" id="btn-entrar">Ver Cardápio →</button>
+      <div class="entrada-acoes">
+        <button class="btn-primario" id="btn-fazer-pedido">Fazer Pedido →</button>
+        <button class="btn-secundario" id="btn-ver-cardapio">Ver Cardápio</button>
+      </div>
     </div>
   </div>
 
@@ -57,7 +82,10 @@
 
     <header class="header-fixo">
       <div class="header-inner">
-        <div class="header-logo">MC'DU <span>Salgados</span></div>
+        <div class="header-brand">
+          <div class="header-logo">MC'DU <span>Salgados</span></div>
+          <div class="header-kicker">artesanal • sob encomenda</div>
+        </div>
         <button class="btn-resumo-header" id="btn-ver-resumo">
           🛒 Resumo
           <span class="badge-contador" id="badge-itens">0</span>
@@ -79,6 +107,10 @@
       <button class="nav-btn" data-cat="doces">Doces</button>
       <button class="nav-btn" data-cat="bebidas">Bebidas</button>
     </nav>
+
+    <button id="aviso-vitrine" class="aviso-vitrine" style="display:none" type="button">
+      Modo visualização: para fazer pedido, clique aqui.
+    </button>
 
     <main class="cardapio-conteudo">
 
@@ -147,21 +179,21 @@
         </div>
       </section>
 
-      <!-- SALGADOS ASSADOS
-           Limite proporcional à quantidade:
-           25un → 2 sabores | 50un → 3 | 75un → 4 | 100un → 5
-      -->
+       <!-- SALGADOS ASSADOS
+         Limite proporcional à quantidade:
+         25un → 2 sabores | 50un → 5 | 75un → 5 | 100un → 5
+       -->
       <section class="categoria" id="salgados-assados">
         <div class="cat-header">
           <h2>Salgados Assados</h2>
           <span class="cat-preco-tag">R$ 100,00 / cento</span>
         </div>
-        <div class="cento-novo"
+           <div class="cento-novo"
              data-cat="salgados-assados"
              data-titulo="Salgados Assados"
              data-preco-cento="100"
              data-max-sabores="5"
-             data-sabores-por-qtd="25:2,50:3,75:4,100:5"
+             data-sabores-por-qtd="25:2,50:5,75:5,100:5"
              data-sabores="Calabresa|Frango|Presunto e Queijo|Milho com Queijo|Brócolis|Hot Dog|Esfiha de Carne|Palmito">
         </div>
       </section>
@@ -328,10 +360,21 @@
 
         <div class="doce-bloco doce-bloco-unitario">
           <div class="itens-unitarios">
-            <div class="item-cento-direto" data-cat="doces-pote" data-sabor="Pote Mini Churros (15 unid)" data-preco="12.25" data-unidade="pote">
+          
+            <div class="item-unitario" data-cat="doces-pote" data-sabor="Copo Churros Palito (Chocolate)" data-preco="15" data-unidades="15">
               <div class="item-nome-bloco">
-                <span class="item-nome">Pote Mini Churros (15 unid)</span>
-                <span class="item-preco-label">R$ 12,25 / pote</span>
+                <span class="item-nome">Copo Churros Palito (Chocolate)</span>
+                <span class="item-unidades">15 un.</span>
+                <span class="item-preco-label">R$ 15,00</span>
+              </div>
+              <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
+            </div>
+
+            <div class="item-unitario" data-cat="doces-pote" data-sabor="Copo Churros Palito (Doce de Leite)" data-preco="12" data-unidades="15">
+              <div class="item-nome-bloco">
+                <span class="item-nome">Copo Churros Palito (Doce de Leite)</span>
+                <span class="item-unidades">15 un.</span>
+                <span class="item-preco-label">R$ 12,00</span>
               </div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
@@ -402,21 +445,20 @@
               <div class="item-nome-bloco"><span class="item-nome">Suco Tampico Laranja 2L</span><span class="item-preco-label">R$ 15,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <!-- ⚠️ PREÇO NÃO INFORMADO: troque o data-preco="0" e o texto "R$ ?,??" abaixo -->
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Uva e Maçã 390ml" data-preco="0">
-              <div class="item-nome-bloco"><span class="item-nome">Bioleve Uva e Maçã 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Uva e Maçã 390ml" data-preco="5">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Uva e Maçã 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Frutas Cítricas 390ml" data-preco="0">
-              <div class="item-nome-bloco"><span class="item-nome">Bioleve Frutas Cítricas 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Frutas Cítricas 390ml" data-preco="5">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Frutas Cítricas 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Acerola e Laranja 390ml" data-preco="0">
-              <div class="item-nome-bloco"><span class="item-nome">Bioleve Acerola e Laranja 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Acerola e Laranja 390ml" data-preco="5">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Acerola e Laranja 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
-            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Limonada Suíça 390ml" data-preco="0">
-              <div class="item-nome-bloco"><span class="item-nome">Bioleve Limonada Suíça 390ml</span><span class="item-preco-label bebida-preco-pendente">R$ ?,?? ← confirmar preço</span></div>
+            <div class="item-unitario" data-cat="bebidas" data-sabor="Bioleve Limonada Suíça 390ml" data-preco="5">
+              <div class="item-nome-bloco"><span class="item-nome">Bioleve Limonada Suíça 390ml</span><span class="item-preco-label">R$ 5,00</span></div>
               <div class="qtd-ctrl"><button class="btn-menos">−</button><span class="qtd-valor">0</span><button class="btn-mais">+</button></div>
             </div>
           </div>
@@ -530,10 +572,18 @@
         <input
           type="text"
           id="endereco-entrega"
-          placeholder="Rua, número, bairro..."
+          placeholder="Rua, número..."
           maxlength="120"
           autocomplete="street-address"
         />
+      </div>
+
+      <div class="campo-grupo" id="grupo-bairro" style="display:none">
+        <label for="bairro-entrega">Bairro</label>
+        <select id="bairro-entrega" class="form-select">
+          <option value="">Carregando bairros...</option>
+        </select>
+        <span class="campo-hint" id="hint-bairro"></span>
       </div>
 
       <!-- ── PAGAMENTO – só aparece quando Entrega ── -->
