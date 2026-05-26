@@ -439,8 +439,9 @@ document.getElementById('btn-fazer-pedido').addEventListener('click', () => {
     return;
   }
 
-  // Não permite iniciar pedidos antes do horário mínimo global (06:00)
-  if (agoraLoja.horaMin < horaParaMin(HORA_MINIMA_PEDIDO)) {
+  // Não permite selecionar/agendar horários antes do horário mínimo global (06:00)
+  // Verifica a hora escolhida (`horaMins`) em vez do relógio atual.
+  if (horaMins < horaParaMin(HORA_MINIMA_PEDIDO)) {
     mostrarAlerta(`Os pedidos são liberados a partir das ${HORA_MINIMA_PEDIDO}.`);
     return;
   }
@@ -1028,6 +1029,7 @@ function initItensUnitarios() {
     const catId  = item.dataset.cat;
     const sabor  = item.dataset.sabor;
     const preco  = parseFloat(item.dataset.preco);
+    const minQtd = item.dataset && item.dataset.minQtd ? parseInt(item.dataset.minQtd, 10) : 0;
     const titulo = item.closest('.categoria').querySelector('h2').textContent;
 
     const display  = item.querySelector('.qtd-valor');
@@ -1060,9 +1062,11 @@ function initItensUnitarios() {
         if (idx >= 0) {
           cat.itens[idx].qtd = qtd;
           if (unidades) cat.itens[idx].unidades = unidades;
+          if (minQtd) cat.itens[idx].minQtd = minQtd;
         } else {
           const novo = { sabor, qtd, preco };
           if (unidades) novo.unidades = unidades;
+          if (minQtd) novo.minQtd = minQtd;
           cat.itens.push(novo);
         }
       }
@@ -1070,13 +1074,14 @@ function initItensUnitarios() {
     }
 
     btnMais.addEventListener('click', () => {
-      const n = parseInt(display.textContent) + 1;
+      const atual = parseInt(display.textContent);
+      const n = minQtd > 0 && atual < minQtd ? minQtd : atual + 1;
       display.textContent = n; setItem(n); atualizarTotais();
     });
     btnMenos.addEventListener('click', () => {
       const atual = parseInt(display.textContent);
       if (atual <= 0) return;
-      const n = atual - 1;
+      const n = minQtd > 0 && atual <= minQtd ? 0 : atual - 1;
       display.textContent = n; setItem(n); atualizarTotais();
     });
   });
@@ -1149,6 +1154,12 @@ function validarPedido() {
         const temSabores = blocoEl.dataset.sabores && blocoEl.dataset.sabores.trim() !== '';
         if (temSabores && (!cat.saboresSelecionados || !cat.saboresSelecionados.length))
           return `Em "${cat.titulo}": escolha pelo menos 1 sabor.`;
+      }
+    } else if (cat.tipo === 'unitario') {
+      for (const item of cat.itens) {
+        if (item.minQtd && item.qtd > 0 && item.qtd < item.minQtd) {
+          return `Em "${cat.titulo}" (${item.sabor}): o mínimo é ${item.minQtd} unidades.`;
+        }
       }
     }
   }
